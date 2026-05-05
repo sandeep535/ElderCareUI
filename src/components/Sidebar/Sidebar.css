@@ -1,0 +1,36 @@
+.dashboard-sidebar {
+  width: 260px;
+  background-color: var(--color-white);
+  border-right: 1px solid var(--color-gray-light);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  height: 100vh;
+  left: 0; top: 0;
+  z-index: 100;
+  overflow-y: auto;
+}
+.sidebar-header { padding: var(--space-lg); border-bottom: 1px solid var(--color-gray-light); }
+.sidebar-logo { display: flex; align-items: center; gap: var(--space-sm); text-decoration: none; color: var(--color-navy); font-family: var(--font-heading); font-weight: 700; font-size: 1.5rem; background: none; border: none; cursor: pointer; transition: opacity var(--transition-fast); }
+.sidebar-logo:hover { opacity: 0.8; }
+.sidebar-logo-icon { width: 48px; height: 48px; object-fit: contain; }
+.sidebar-logo-text { font-family: var(--font-heading); font-size: 1.125rem; font-weight: 700; color: var(--color-navy); }
+.sidebar-nav { flex: 1; padding: var(--space-md) 0; overflow-y: auto; display: flex; flex-direction: column; }
+.nav-item {
+  display: flex; align-items: center; gap: var(--space-md);
+  padding: var(--space-md) var(--space-lg);
+  color: var(--color-gray); text-decoration: none;
+  font-size: 0.9375rem; font-weight: 500;
+  transition: all var(--transition-fast);
+  position: relative; border-left: 3px solid transparent;
+  background: none; border-top: none; border-right: none; border-bottom: none;
+  cursor: pointer; width: 100%; text-align: left;
+  height: 52px;
+}
+.nav-item svg { width: 20px; height: 20px; flex-shrink: 0; }
+.nav-item:hover { background-color: var(--color-off-white); color: var(--color-primary); }
+.nav-item.active { background-color: var(--color-primary-alpha); color: var(--color-primary); border-left-color: var(--color-primary); font-weight: 600; }
+.nav-badge { margin-left: auto; background-color: var(--color-primary); color: var(--color-white); font-size: 0.75rem; font-weight: 600; padding: 2px 8px; border-radius: var(--radius-full); min-width: 20px; text-align: center; }
+.nav-item.logout { color: #DC2626; }
+.nav-item.logout:hover { background-color: rgba(220,38,38,0.1); }
+.sidebar-footer { padding: var(--space-md); border-top: 1px solid var(--color-gray-light); }

@@ -1,0 +1,82 @@
+.patient-list-section {
+  background-color: var(--color-white);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-gray-light);
+  overflow: hidden;
+}
+.patient-list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-md) var(--space-lg);
+  border-bottom: 1px solid var(--color-gray-light);
+}
+.patient-list-title {
+  font-family: var(--font-heading);
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--color-navy);
+}
+.patient-list-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+.patient-list-body {
+  padding: var(--space-md);
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-md);
+}
+
+@media (max-width: 768px) {
+  .patient-list-body { grid-template-columns: 1fr; }
+}
+
+@media (min-width: 1400px) {
+  .patient-list-body { grid-template-columns: repeat(3, 1fr); }
+}
+.patient-list-empty {
+  text-align: center;
+  padding: var(--space-xl);
+  color: var(--color-gray);
+  font-size: 0.9375rem;
+}
+
+/* Draft Toggle Button */
+.btn-draft-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background-color: var(--color-off-white);
+  border: 1.5px solid var(--color-gray-light);
+  color: var(--color-gray);
+  border-radius: var(--radius-sm);
+  padding: 0.375rem 0.75rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+.btn-draft-toggle svg { width: 15px; height: 15px; }
+.btn-draft-toggle:hover {
+  border-color: #F59E0B;
+  color: #F59E0B;
+  background-color: rgba(245, 158, 11, 0.05);
+}
+.btn-draft-toggle.active {
+  background-color: rgba(245, 158, 11, 0.1);
+  border-color: #F59E0B;
+  color: #F59E0B;
+  font-weight: 600;
+}
+.draft-count {
+  background-color: #F59E0B;
+  color: white;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: var(--radius-full);
+  min-width: 18px;
+  text-align: center;
+}

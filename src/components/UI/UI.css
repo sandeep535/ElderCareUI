@@ -1,0 +1,27 @@
+.btn-primary { display: inline-flex; align-items: center; gap: 6px; background-color: var(--color-primary); color: white; border: none; border-radius: var(--radius-sm); padding: 0.5rem var(--space-sm); font-size: 0.875rem; font-weight: 600; cursor: pointer; transition: all var(--transition-fast); }
+.btn-primary:hover { background-color: var(--color-primary-dark); }
+.btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+.btn-primary svg { width: 16px; height: 16px; }
+.btn-secondary { display: inline-flex; align-items: center; gap: 6px; background-color: transparent; color: var(--color-navy); border: 1px solid var(--color-gray-light); border-radius: var(--radius-sm); padding: 0.5rem var(--space-sm); font-size: 0.875rem; font-weight: 500; cursor: pointer; transition: all var(--transition-fast); }
+.btn-secondary:hover { border-color: var(--color-primary); color: var(--color-primary); }
+.btn-sm { padding: 0.375rem 0.75rem; font-size: 0.8125rem; }
+.btn-spinner { width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.4); border-top-color: white; border-radius: 50%; animation: spin 0.7s linear infinite; display: inline-block; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.patient-status { font-size: 0.75rem; font-weight: 600; padding: 3px 10px; border-radius: var(--radius-full); }
+.status-stable      { background-color: rgba(16,185,129,0.1); color: #10B981; }
+.status-warning     { background-color: rgba(245,158,11,0.1);  color: #F59E0B; }
+.status-critical    { background-color: rgba(239,68,68,0.1);   color: #EF4444; }
+.status-observation { background-color: rgba(59,130,246,0.1);  color: #3B82F6; }
+.modal-overlay { position: fixed; inset: 0; background-color: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: var(--space-md); }
+.modal-container { background-color: var(--color-white); border-radius: var(--radius-lg); width: 100%; max-width: 560px; max-height: 90vh; overflow-y: auto; box-shadow: var(--shadow-lg); }
+.modal-large { max-width: 720px; }
+.modal-header { display: flex; align-items: center; justify-content: space-between; padding: var(--space-lg); border-bottom: 1px solid var(--color-gray-light); position: sticky; top: 0; background: white; z-index: 1; }
+.modal-title { font-family: var(--font-heading); font-size: 1.25rem; font-weight: 700; color: var(--color-navy); }
+.modal-close { background: none; border: none; cursor: pointer; padding: var(--space-xs); border-radius: var(--radius-sm); color: var(--color-gray); transition: all var(--transition-fast); }
+.modal-close:hover { background-color: var(--color-off-white); color: var(--color-navy); }
+.modal-close svg { width: 20px; height: 20px; }
+.modal-body { padding: var(--space-lg); }
+.modal-footer { display: flex; align-items: center; justify-content: flex-end; gap: var(--space-sm); padding: var(--space-md) var(--space-lg); border-top: 1px solid var(--color-gray-light); }
+.empty-state, .error-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: var(--space-xl); gap: var(--space-sm); text-align: center; }
+.empty-state-msg { font-size: 0.9375rem; color: var(--color-gray); }
+.error-state-msg { font-size: 0.9375rem; color: #EF4444; }

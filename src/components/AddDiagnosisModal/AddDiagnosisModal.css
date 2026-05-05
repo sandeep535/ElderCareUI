@@ -1,0 +1,106 @@
+/* AddDiagnosisModal uses shared Form.css */
+
+.save-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-bottom: 16px;
+}
+
+.save-status svg { width: 20px; height: 20px; flex-shrink: 0; }
+
+.save-status--success { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+.save-status--error   { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
+
+.view-detail-grid { display: flex; flex-direction: column; gap: 12px; }
+
+.view-detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 10px 0;
+  border-bottom: 1px solid #f3f4f6;
+  gap: 16px;
+}
+
+.view-detail-row:last-child { border-bottom: none; }
+
+.view-detail-label {
+  font-size: 0.8125rem;
+  color: #6b7280;
+  font-weight: 500;
+  min-width: 130px;
+}
+
+.view-detail-value {
+  font-size: 0.875rem;
+  color: #111827;
+  font-weight: 500;
+  text-align: right;
+}
+
+.diagnosis-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn-view-sm {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #6366f1;
+  background: #eef2ff;
+  border: 1px solid #c7d2fe;
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.btn-view-sm:hover { background: #e0e7ff; }
+.btn-view-sm svg { width: 13px; height: 13px; }
+
+.autocomplete-list {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: #fff;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  list-style: none;
+  margin: 2px 0 0;
+  padding: 4px 0;
+  z-index: 100;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.autocomplete-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 0.875rem;
+}
+
+.autocomplete-item:hover {
+  background: #f3f4f6;
+}
+
+.autocomplete-icd {
+  font-size: 0.75rem;
+  color: #6b7280;
+  background: #f3f4f6;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
