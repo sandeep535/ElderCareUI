@@ -97,6 +97,7 @@ export const fetchDiagnosisMaster = () => apiGet('/diagnosis-master')
 // Medications
 export const fetchMedications = (patientId) => apiGet(`/patients/${patientId}/medications`)
 export const createMedication = (patientId, data) => apiPost(`/patients/${patientId}/medications`, data)
+export const fetchMedicationMaster = () => apiGet('/medication-master')
 
 // Clinical Notes
 export const fetchNotes = (patientId) => apiGet(`/patients/${patientId}/clinical-notes`)

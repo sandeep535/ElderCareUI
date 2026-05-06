@@ -6,13 +6,14 @@ import RecordVitalsModal from '../../components/RecordVitalsModal/RecordVitalsMo
 import ClinicalNoteModal from '../../components/ClinicalNoteModal/ClinicalNoteModal'
 import AddDiagnosisModal from '../../components/AddDiagnosisModal/AddDiagnosisModal'
 import AddSurgeryModal from '../../components/AddSurgeryModal/AddSurgeryModal'
+import AddMedicationModal from '../../components/AddMedicationModal/AddMedicationModal'
 import RecentActivity from '../../components/RecentActivity/RecentActivity'
 import { useApi, useMutation } from '../../hooks/useApi'
 import {
   fetchPatientById, fetchPatientMedical, fetchPatientAdmission,
   fetchNokByPatientId, fetchVitals, fetchDiagnoses,
   fetchMedications, fetchNotes, fetchSurgeries,
-  createVital, createNote, createDiagnosis, createSurgery,
+  createVital, createNote, createDiagnosis, createSurgery, createMedication,
   fetchUnresolvedAlerts,
 } from '../../api/endpoints'
 import './PatientDetail.css'
@@ -94,8 +95,10 @@ export default function PatientDetail() {
   const [showNote,      setShowNote]     = useState(false)
   const [showDiagnosis, setShowDiagnosis] = useState(false)
   const [viewDiagnosis, setViewDiagnosis] = useState(null)
-  const [showSurgery,   setShowSurgery]  = useState(false)
-  const [viewSurgery,   setViewSurgery]  = useState(null)
+  const [showSurgery,    setShowSurgery]    = useState(false)
+  const [viewSurgery,    setViewSurgery]    = useState(null)
+  const [showMedication, setShowMedication] = useState(false)
+  const [viewMedication, setViewMedication] = useState(null)
   const [showAllAlerts, setShowAllAlerts] = useState(false)
   const [alerts,        setAlerts]        = useState([])
   const [patientInfo,   setPatientInfo]  = useState(null)
@@ -150,7 +153,7 @@ export default function PatientDetail() {
   // tab data
   const { data: rawVitals,    loading: vitalsLoading,      setData: setRawVitals }  = useApi(fetchVitals,      [id])
   const { data: diagnoses,   loading: diagnosesLoading,   setData: setDiagnoses } = useApi(fetchDiagnoses,   [id])
-  const { data: medications, loading: medicationsLoading }                         = useApi(fetchMedications, [id])
+  const { data: medications, loading: medicationsLoading, setData: setMedications, execute: reloadMedications } = useApi(fetchMedications, [id])
   const { data: notes,       loading: notesLoading,       setData: setNotes,     execute: loadNotes } = useApi(fetchNotes, [id], false)
   const { data: surgeries,   loading: surgeriesLoading,   setData: setSurgeries } = useApi(fetchSurgeries,   [id])
 
@@ -163,8 +166,9 @@ export default function PatientDetail() {
 
   const { mutate: saveVital }     = useMutation((data) => createVital(id, data))
   const { mutate: saveNote }      = useMutation((data) => createNote(id, data))
-  const { mutate: saveDiagnosis } = useMutation((data) => createDiagnosis(id, data))
-  const { mutate: saveSurgery }   = useMutation((data) => createSurgery(id, data))
+  const { mutate: saveDiagnosis }  = useMutation((data) => createDiagnosis(id, data))
+  const { mutate: saveSurgery }    = useMutation((data) => createSurgery(id, data))
+  const { mutate: saveMedication } = useMutation((data) => createMedication(id, data))
 
   const handleSaveVitals    = async (data) => {
     const v = await saveVital(data)
@@ -389,18 +393,44 @@ export default function PatientDetail() {
 
         {activeTab === 'medications' && (
           <div className="emr-card">
-            <div className="emr-card-header"><h3 className="emr-card-title">Current Medications</h3></div>
+            <div className="emr-card-header">
+              <h3 className="emr-card-title">Current Medications</h3>
+              <button className="btn-primary btn-sm" onClick={() => setShowMedication(true)}>
+                <svg viewBox="0 0 24 24" fill="none"><path d="M12 5V19M5 12H19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                Add Medication
+              </button>
+            </div>
             <div className="emr-card-body">
               {medicationsLoading ? <VitalsTableSkeleton /> : (
                 <div className="medications-list">
+                  {(!medications || medications.length === 0) && (
+                    <p style={{ color: 'var(--color-gray)', fontSize: '0.875rem' }}>No medications recorded.</p>
+                  )}
                   {medications?.map((m, i) => (
                     <div key={m.id || i} className="medication-item">
                       <div className="medication-info">
-                        <h4 className="medication-name">{m.name}</h4>
-                        <p className="medication-details">{m.details}</p>
+                        <h4 className="medication-name">{m.drugName}</h4>
+                        <p className="medication-details">
+                          {[`${m.strengthValue}${m.strengthUnit}`, m.doseForm, m.doseAmount, m.route, m.frequency].filter(Boolean).join(' · ')}
+                        </p>
+                        {m.sig && <p className="medication-details" style={{ marginTop: 4, fontStyle: 'italic' }}>{m.sig}</p>}
+                        {m.indication && <p className="medication-details" style={{ marginTop: 2 }}>Indication: {m.indication}</p>}
                       </div>
                       <div className="medication-status">
-                        <span className="medication-status-badge active">Active</span>
+                        <span className={`medication-status-badge ${m.active ? 'active' : ''}`}>
+                          {m.active ? 'Active' : 'Inactive'}
+                        </span>
+                        <span className="medication-next-dose">{m.orderPriority}</span>
+                        {m.startDateTime && (
+                          <span className="medication-next-dose">
+                            From: {new Date(m.startDateTime).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                          </span>
+                        )}
+                        {m.duration && <span className="medication-next-dose">{m.duration}</span>}
+                        <button className="btn-view-sm" onClick={() => setViewMedication(m)}>
+                          <svg viewBox="0 0 24 24" fill="none"><path d="M1 12C1 12 5 4 12 4s11 8 11 8-4 8-11 8S1 12 1 12z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="2"/></svg>
+                          View
+                        </button>
                       </div>
                     </div>
                   ))}
@@ -477,8 +507,14 @@ export default function PatientDetail() {
       {showNote      && <ClinicalNoteModal onClose={() => setShowNote(false)}      onSave={handleSaveNote} />}
       {showDiagnosis && <AddDiagnosisModal onClose={() => setShowDiagnosis(false)} onSave={handleSaveDiagnosis} />}
       {viewDiagnosis && <AddDiagnosisModal onClose={() => setViewDiagnosis(null)} viewData={viewDiagnosis} />}
-      {showSurgery   && <AddSurgeryModal onClose={() => setShowSurgery(false)}   onSave={handleSaveSurgery} />}
-      {viewSurgery   && <AddSurgeryModal onClose={() => setViewSurgery(null)}    viewData={viewSurgery} />}
+      {showSurgery    && <AddSurgeryModal    onClose={() => setShowSurgery(false)}    onSave={handleSaveSurgery} />}
+      {viewSurgery    && <AddSurgeryModal    onClose={() => setViewSurgery(null)}     viewData={viewSurgery} />}
+      {showMedication && <AddMedicationModal onClose={() => setShowMedication(false)} onSave={async (data) => {
+        const m = await saveMedication(data)
+        if (m) reloadMedications(id)
+        else throw new Error('Failed to save medication')
+      }} />}
+      {viewMedication && <AddMedicationModal onClose={() => setViewMedication(null)} viewData={viewMedication} />}
 
       {showAllAlerts && (
         <div className="modal-overlay" onClick={e => e.target === e.currentTarget && setShowAllAlerts(false)}>
