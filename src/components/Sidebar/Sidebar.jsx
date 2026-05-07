@@ -28,6 +28,14 @@ const NAV_ITEMS = [
     label: 'Reports', path: '#', key: 'reports',
     icon: <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" ry="2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M16 2V6M8 2V6M3 10H21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>,
   },
+  {
+    label: 'Task Master', path: '/task-master', key: 'task-master',
+    icon: <svg viewBox="0 0 24 24" fill="none"><path d="M9 11l3 3L22 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+  },
+  {
+    label: 'Task Groups', path: '/task-groups', key: 'task-groups',
+    icon: <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="7" height="7" rx="1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><rect x="14" y="3" width="7" height="7" rx="1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><rect x="3" y="14" width="7" height="7" rx="1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><rect x="14" y="14" width="7" height="7" rx="1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+  },
 ]
 
 // map pathname+search → active key
@@ -35,6 +43,8 @@ const PATH_TO_KEY = {
   '/nurse-dashboard':               'dashboard',
   '/nurse-dashboard?view=patients': 'patients',
   '/patient':                       'patients',
+  '/task-master':                   'task-master',
+  '/task-groups':                   'task-groups',
 }
 
 export default function Sidebar() {

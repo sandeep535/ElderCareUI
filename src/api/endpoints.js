@@ -59,7 +59,7 @@ export const createNok = (patientId, nokList) => apiPost(`/patients/${patientId}
 export const updateNok = (patientId, nokList) => apiPut(`/patients/${patientId}/nok`, buildNokPayload(nokList))
 
 // Masters
-export const fetchMasterData = (type) => apiGet(`/masters/${type}`)
+export const fetchMasterData = (type) => apiGet(`/${type}`)
 export const fetchUsers = () => apiGet('/users')
 
 // Medical
@@ -102,6 +102,11 @@ export const fetchMedicationMaster = () => apiGet('/medication-master')
 // Clinical Notes
 export const fetchNotes = (patientId) => apiGet(`/patients/${patientId}/clinical-notes`)
 export const createNote = (patientId, data) => apiPost(`/patients/${patientId}/clinical-notes`, data)
+
+// Tasks
+export const fetchTasksRange = (patientId, from, to) => apiGet(`/patients/${patientId}/tasks/range`, { from, to })
+export const createTasks = (patientId, data) => apiPost(`/patients/${patientId}/tasks`, data)
+export const updateTask = (patientId, taskId, data) => apiPut(`/patients/${patientId}/tasks/${taskId}`, data)
 
 // Alerts
 export const fetchUnresolvedAlerts = (patientId) => apiGet(`/patients/${patientId}/alerts/unresolved`)

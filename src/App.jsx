@@ -4,6 +4,8 @@ import AppLayout from './components/AppLayout/AppLayout'
 import Login from './pages/Login/Login'
 import NurseDashboard from './pages/NurseDashboard/NurseDashboard'
 import PatientDetail from './pages/PatientDetail/PatientDetail'
+import TaskMaster from './pages/TaskMaster/TaskMaster'
+import TaskGroup from './pages/TaskGroup/TaskGroup'
 import './styles/theme.css'
 
 export default function App() {
@@ -19,6 +21,8 @@ export default function App() {
           <Route element={<AppLayout />}>
             <Route path="/nurse-dashboard" element={<NurseDashboard />} />
             <Route path="/patient/:id"     element={<PatientDetail />} />
+            <Route path="/task-master"     element={<TaskMaster />} />
+            <Route path="/task-groups"     element={<TaskGroup />} />
           </Route>
         </Routes>
       </BrowserRouter>

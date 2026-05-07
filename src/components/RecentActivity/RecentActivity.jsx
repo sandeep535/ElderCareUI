@@ -3,25 +3,32 @@ import { apiGet } from '../../api/apiService'
 import './RecentActivity.css'
 
 const TYPE_CONFIG = {
-  VITAL:          { label: 'Vital Signs Recorded', cls: 'activity-icon-vital' },
-  CLINICAL_NOTE:  { label: 'Clinical Note Added',  cls: 'activity-icon-note' },
-  DIAGNOSIS:      { label: 'Diagnosis Added',      cls: 'activity-icon-diagnosis' },
-  MEDICAL_HISTORY:{ label: 'Medical History Added',cls: 'activity-icon-surgery' },
-  NOTES:          { label: 'Note Added',           cls: 'activity-icon-note' },
-  MEDICATION:     { label: 'Medication Added',     cls: 'activity-icon-medication' },
+  VITALS:          { label: 'Vital Signs Recorded', cls: 'activity-icon-vital' },
+  VITAL:           { label: 'Vital Signs Recorded', cls: 'activity-icon-vital' },
+  CLINICAL_NOTE:   { label: 'Clinical Note Added',  cls: 'activity-icon-note' },
+  DIAGNOSIS:       { label: 'Diagnosis Added',      cls: 'activity-icon-diagnosis' },
+  MEDICAL_HISTORY: { label: 'Medical History Added',cls: 'activity-icon-surgery' },
+  MEDICATION:      { label: 'Medication Added',     cls: 'activity-icon-medication' },
+  NOTES:           { label: 'Note Added',           cls: 'activity-icon-note' },
+  MEDICAL:         { label: 'Medical Info Updated', cls: 'activity-icon-note' },
+  ADMISSION:       { label: 'Admission Created',    cls: 'activity-icon-diagnosis' },
+  ADMISSION_UPDATE:{ label: 'Admission Updated',    cls: 'activity-icon-diagnosis' },
 }
 
-const getConfig = (type) => TYPE_CONFIG[type] || { label: type, cls: 'activity-icon-vital' }
+const getConfig = (type) => TYPE_CONFIG[type] || { label: type?.replace(/_/g, ' '), cls: 'activity-icon-vital' }
 
 const getDescription = (type, data) => {
   if (!data) return '--'
-  if (type === 'VITAL')
+  if (type === 'VITALS' || type === 'VITAL')
     return `BP: ${data.systolic ?? '--'}/${data.diastolic ?? '--'}, HR: ${data.hr ?? '--'} bpm, Temp: ${data.temp ?? '--'}°F, SpO₂: ${data.spo2 ?? '--'}%`
-  if (type === 'CLINICAL_NOTE') return data.notes || data.noteTitle || '--'
-  if (type === 'DIAGNOSIS')     return data.diagnosisName || '--'
+  if (type === 'CLINICAL_NOTE')  return data.notes || data.noteTitle || '--'
+  if (type === 'DIAGNOSIS')      return data.diagnosisName || '--'
   if (type === 'MEDICAL_HISTORY') return data.surgeryName || '--'
-  if (type === 'NOTES')         return data.notes || '--'
-  return data.name || data.title || '--'
+  if (type === 'MEDICATION')     return data.drugName ? `${data.drugName}${data.strengthValue ? ` ${data.strengthValue}${data.strengthUnit || ''}` : ''} · ${data.route || ''} · ${data.frequency || ''}`.trim() : '--'
+  if (type === 'NOTES')          return data.notes || '--'
+  if (type === 'MEDICAL')        return data.primaryPhysicianName ? `Physician: ${data.primaryPhysicianName}` : 'Medical record updated'
+  if (type === 'ADMISSION' || type === 'ADMISSION_UPDATE') return data.roomNumber ? `Room ${data.roomNumber}${data.bed ? `, Bed ${data.bed}` : ''}` : 'Admission record updated'
+  return '--'
 }
 
 const formatTime = (dt) => {
@@ -40,7 +47,7 @@ const formatTime = (dt) => {
 }
 
 function ActivityIcon({ type }) {
-  if (type === 'VITAL') return (
+  if (type === 'VITALS' || type === 'VITAL') return (
     <svg viewBox="0 0 24 24" fill="none"><path d="M12 2V6M12 18V22M6 12H2M22 12H18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><circle cx="12" cy="12" r="4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
   )
   if (type === 'CLINICAL_NOTE' || type === 'NOTES') return (
@@ -51,6 +58,9 @@ function ActivityIcon({ type }) {
   )
   if (type === 'MEDICAL_HISTORY' || type === 'SURGERY') return (
     <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M9 3V9M15 3V9M3 15H21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+  )
+  if (type === 'MEDICATION') return (
+    <svg viewBox="0 0 24 24" fill="none"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
   )
   return (
     <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M9 3V9M15 3V9M3 15H21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>

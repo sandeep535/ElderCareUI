@@ -57,8 +57,8 @@ export default function PatientList() {
   const handleAddPatient = async (data) => {
     const newPatient = await addPatient(data)
     if (newPatient) {
-      setPatients(prev => [...(prev || []), newPatient])
       setShowAddPatient(false)
+      refetch()
     }
   }
 

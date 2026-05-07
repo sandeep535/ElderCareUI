@@ -7,6 +7,7 @@ import ClinicalNoteModal from '../../components/ClinicalNoteModal/ClinicalNoteMo
 import AddDiagnosisModal from '../../components/AddDiagnosisModal/AddDiagnosisModal'
 import AddSurgeryModal from '../../components/AddSurgeryModal/AddSurgeryModal'
 import AddMedicationModal from '../../components/AddMedicationModal/AddMedicationModal'
+import AddTaskModal from '../../components/AddTaskModal/AddTaskModal'
 import RecentActivity from '../../components/RecentActivity/RecentActivity'
 import { useApi, useMutation } from '../../hooks/useApi'
 import {
@@ -14,7 +15,7 @@ import {
   fetchNokByPatientId, fetchVitals, fetchDiagnoses,
   fetchMedications, fetchNotes, fetchSurgeries,
   createVital, createNote, createDiagnosis, createSurgery, createMedication,
-  fetchUnresolvedAlerts,
+  fetchUnresolvedAlerts, fetchTasksRange, createTasks, updateTask,
 } from '../../api/endpoints'
 import './PatientDetail.css'
 import '../../components/UI/UI.css'
@@ -23,6 +24,7 @@ import '../../components/UI/Form.css'
 const TABS = [
   { key: 'overview',    label: 'Overview' },
   { key: 'vitals',      label: 'Vital Signs' },
+  { key: 'tasks',       label: 'Tasks' },
   { key: 'medications', label: 'Medications' },
   { key: 'notes',       label: 'Clinical Notes' },
   { key: 'history',     label: 'Medical History' },
@@ -61,15 +63,6 @@ const getRelativeTime = (timestamp) => {
 // Map API vital response to display shape
 const normalizeVital = (v) => {
   const recordedDate = v.recordedAt ? new Date(v.recordedAt) : null
-  const formatDate = (date) => {
-    if (!date) return '--'
-    const day = String(date.getDate()).padStart(2, '0')
-    const month = String(date.getMonth() + 1).padStart(2, '0')
-    const year = date.getFullYear()
-    const hours = String(date.getHours()).padStart(2, '0')
-    const mins = String(date.getMinutes()).padStart(2, '0')
-    return `${day}-${month}-${year} ${hours}:${mins}`
-  }
   return {
     id:          v.id,
     bp:          `${v.systolic}/${v.diastolic}`,
@@ -82,11 +75,50 @@ const normalizeVital = (v) => {
     rawSpo2:     v.spo2,
     notes:       v.notes || '',
     hasAlert:    v.hasAlert,
-    datetime:    formatDate(recordedDate),
+    datetime:    formatDateTimeDisplay(recordedDate),
     relativeTime: getRelativeTime(v.recordedAt),
     by:          'Nurse',
   }
 }
+
+const formatDateTimeDisplay = (date) => {
+  if (!date) return '--'
+  const d = new Date(date)
+  const day = String(d.getDate()).padStart(2, '0')
+  const month = String(d.getMonth() + 1).padStart(2, '0')
+  const year = d.getFullYear()
+  const hours = String(d.getHours()).padStart(2, '0')
+  const mins = String(d.getMinutes()).padStart(2, '0')
+  return `${day}-${month}-${year} ${hours}:${mins}`
+}
+
+const formatDateTimeInput = (date) => {
+  if (!date) return ''
+  const d = new Date(date)
+  const year = d.getFullYear()
+  const month = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+const getDateOffset = (days) => {
+  const date = new Date()
+  date.setDate(date.getDate() + days)
+  return formatDateTimeInput(date)
+}
+
+const normalizeTask = (task) => ({
+  id: task.id,
+  taskIds: task.taskIds || [],
+  taskGroupIds: task.taskGroupIds || [],
+  scheduledDateTime: task.scheduledDateTime || task.scheduledDate || null,
+  formattedDate: task.scheduledDateTime ? new Date(task.scheduledDateTime) : null,
+  status: task.status || 'PENDING',
+  notes: task.notes || '',
+  assignedToUserId: task.assignedToUserId || task.assignedTo?.userId || null,
+  assignedTo: task.assignedTo?.firstName ? `${task.assignedTo.firstName} ${task.assignedTo.lastName || ''}`.trim() : task.assignedToName || '--',
+})
+
 
 export default function PatientDetail() {
   const { id } = useParams()
@@ -99,6 +131,9 @@ export default function PatientDetail() {
   const [viewSurgery,    setViewSurgery]    = useState(null)
   const [showMedication, setShowMedication] = useState(false)
   const [viewMedication, setViewMedication] = useState(null)
+  const [showTaskModal, setShowTaskModal] = useState(false)
+  const [taskFrom, setTaskFrom] = useState(getDateOffset(-7))
+  const [taskTo, setTaskTo] = useState(getDateOffset(0))
   const [showAllAlerts, setShowAllAlerts] = useState(false)
   const [alerts,        setAlerts]        = useState([])
   const [patientInfo,   setPatientInfo]  = useState(null)
@@ -156,6 +191,12 @@ export default function PatientDetail() {
   const { data: medications, loading: medicationsLoading, setData: setMedications, execute: reloadMedications } = useApi(fetchMedications, [id])
   const { data: notes,       loading: notesLoading,       setData: setNotes,     execute: loadNotes } = useApi(fetchNotes, [id], false)
   const { data: surgeries,   loading: surgeriesLoading,   setData: setSurgeries } = useApi(fetchSurgeries,   [id])
+  const { data: rawTasks,    loading: tasksLoading,       error: tasksError,    execute: loadTasks, setData: setTaskData } = useApi(fetchTasksRange, [id, taskFrom, taskTo], false)
+
+  useEffect(() => {
+    if (!id) return
+    loadTasks(id, taskFrom, taskTo)
+  }, [id, taskFrom, taskTo, loadTasks])
 
   // normalize + sort vitals by createdOn desc (latest first)
   const vitals = rawVitals
@@ -164,11 +205,19 @@ export default function PatientDetail() {
         .map(normalizeVital)
     : null
 
+  const tasks = rawTasks
+    ? [...rawTasks]
+        .sort((a, b) => new Date(a.scheduledDateTime || a.scheduledDate || 0) - new Date(b.scheduledDateTime || b.scheduledDate || 0))
+        .map(normalizeTask)
+    : null
+
   const { mutate: saveVital }     = useMutation((data) => createVital(id, data))
   const { mutate: saveNote }      = useMutation((data) => createNote(id, data))
   const { mutate: saveDiagnosis }  = useMutation((data) => createDiagnosis(id, data))
   const { mutate: saveSurgery }    = useMutation((data) => createSurgery(id, data))
   const { mutate: saveMedication } = useMutation((data) => createMedication(id, data))
+  const { mutate: saveTask }       = useMutation((data) => createTasks(id, data))
+  const { mutate: patchTask }      = useMutation((taskId, data) => updateTask(id, taskId, data))
 
   const handleSaveVitals    = async (data) => {
     const v = await saveVital(data)
@@ -176,6 +225,21 @@ export default function PatientDetail() {
       setRawVitals(prev => [v, ...(prev || [])])
       setShowVitals(false)
     }
+  }
+  const handleSaveTask = async (data) => {
+    const saved = await saveTask(data)
+    if (saved) {
+      setTaskData(prev => [saved, ...(prev || [])])
+      setShowTaskModal(false)
+    }
+    return saved
+  }
+  const handleUpdateTask = async (taskId, data) => {
+    const updated = await patchTask(taskId, data)
+    if (updated) {
+      setTaskData(prev => prev?.map(item => item.id === updated.id ? updated : item))
+    }
+    return updated
   }
   const handleSaveNote = async (data) => {
     const n = await saveNote(data)
@@ -205,6 +269,7 @@ export default function PatientDetail() {
   const handleTabChange = (key) => {
     setActiveTab(key)
     if (key === 'notes' && !notes) loadNotes(id)
+    if (key === 'tasks') loadTasks(id, taskFrom, taskTo)
   }
 
   const currentVitals = vitals?.[0] || patientInfo?.vitals
@@ -391,6 +456,77 @@ export default function PatientDetail() {
           </div>
         )}
 
+        {activeTab === 'tasks' && (
+          <div className="emr-card">
+            <div className="emr-card-header">
+              <h3 className="emr-card-title">Patient Tasks</h3>
+              <button className="btn-primary btn-sm" onClick={() => setShowTaskModal(true)}>
+                <svg viewBox="0 0 24 24" fill="none"><path d="M12 5V19M5 12H19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                Add Task
+              </button>
+            </div>
+            <div className="emr-card-body">
+              <div className="task-filter-row">
+                <label className="form-label">From</label>
+                <input type="date" className="form-input" value={taskFrom} onChange={(e) => setTaskFrom(e.target.value)} />
+                <label className="form-label">To</label>
+                <input type="date" className="form-input" value={taskTo} onChange={(e) => setTaskTo(e.target.value)} />
+              </div>
+              {tasksLoading ? <VitalsTableSkeleton /> : (
+                <div className="vitals-table">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Scheduled</th>
+                        <th>Tasks</th>
+                        <th>Groups</th>
+                        <th>Assigned To</th>
+                        <th>Status</th>
+                        <th>Notes</th>
+                        <th>Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {tasks?.length ? tasks.map((task, i) => (
+                        <tr key={task.id || i}>
+                          <td>{task.formattedDate ? formatDateTimeDisplay(task.formattedDate) : '--'}</td>
+                          <td>{Array.isArray(task.taskIds) ? task.taskIds.join(', ') : '--'}</td>
+                          <td>{Array.isArray(task.taskGroupIds) ? task.taskGroupIds.join(', ') : '--'}</td>
+                          <td>{task.assignedTo || '--'}</td>
+                          <td>{task.status}</td>
+                          <td>{task.notes || '--'}</td>
+                          <td>
+                            {task.status !== 'COMPLETED' ? (
+                              <button className="btn-secondary btn-sm" onClick={() => handleUpdateTask(task.id, {
+                                taskIds: task.taskIds,
+                                taskGroupIds: task.taskGroupIds,
+                                scheduledDateTime: task.scheduledDateTime,
+                                status: 'COMPLETED',
+                                notes: task.notes,
+                                assignedToUserId: task.assignedToUserId,
+                              })}>
+                                Complete
+                              </button>
+                            ) : (
+                              <span style={{ color: '#10B981', fontWeight: 600 }}>Done</span>
+                            )}
+                          </td>
+                        </tr>
+                      )) : (
+                        <tr>
+                          <td colSpan="7" style={{ textAlign: 'center', color: 'var(--color-gray)' }}>
+                            No tasks found for the selected date range.
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         {activeTab === 'medications' && (
           <div className="emr-card">
             <div className="emr-card-header">
@@ -515,6 +651,7 @@ export default function PatientDetail() {
         else throw new Error('Failed to save medication')
       }} />}
       {viewMedication && <AddMedicationModal onClose={() => setViewMedication(null)} viewData={viewMedication} />}
+      {showTaskModal && <AddTaskModal onClose={() => setShowTaskModal(false)} onSave={handleSaveTask} />}
 
       {showAllAlerts && (
         <div className="modal-overlay" onClick={e => e.target === e.currentTarget && setShowAllAlerts(false)}>
