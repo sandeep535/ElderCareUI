@@ -2,28 +2,26 @@ import { useForm } from 'react-hook-form'
 import { useState, useEffect, useRef } from 'react'
 import { yupResolver } from '@hookform/resolvers/yup'
 import * as yup from 'yup'
-import { fetchMasterData, fetchUsers } from '../../api/endpoints'
+import { fetchMasterData } from '../../api/endpoints'
 import '../UI/UI.css'
 import '../UI/Form.css'
 import './AddTaskModal.css'
 
 const schema = yup.object({
-  taskIds:        yup.array().min(1, 'Select at least one task'),
-  taskGroupIds:   yup.array(),
+  taskIds:           yup.array().min(1, 'Select at least one task'),
+  taskGroupIds:      yup.array(),
   scheduledDateTime: yup.string().required('Scheduled date/time is required'),
-  assignedToUserId: yup.string().required('Assigned user is required'),
-  status:         yup.string().required('Status is required'),
-  notes:          yup.string(),
+  status:            yup.string().required('Status is required'),
+  notes:             yup.string(),
 })
 
 export default function AddTaskModal({ onClose, onSave }) {
-  const { register, handleSubmit, control, formState: { errors }, setValue, watch } = useForm({
+  const { register, handleSubmit, formState: { errors }, setValue, watch } = useForm({
     resolver: yupResolver(schema),
     defaultValues: {
       taskIds: [],
       taskGroupIds: [],
       scheduledDateTime: '',
-      assignedToUserId: '',
       status: 'PENDING',
       notes: '',
     },
@@ -33,20 +31,17 @@ export default function AddTaskModal({ onClose, onSave }) {
   const [saveError, setSaveError] = useState('')
   const [tasks, setTasks] = useState([])
   const [groups, setGroups] = useState([])
-  const [users, setUsers] = useState([])
   const wrapperRef = useRef(null)
 
   useEffect(() => {
     const load = async () => {
       try {
-        const [taskRes, groupRes, userRes] = await Promise.all([
+        const [taskRes, groupRes] = await Promise.all([
           fetchMasterData('tasks'),
           fetchMasterData('task-groups'),
-          fetchUsers(),
         ])
         setTasks(Array.isArray(taskRes) ? taskRes : taskRes?.data || [])
         setGroups(Array.isArray(groupRes) ? groupRes : groupRes?.data || [])
-        setUsers(Array.isArray(userRes) ? userRes : userRes?.data || [])
       } catch (err) {
         // ignore load failure
       }
@@ -72,6 +67,15 @@ export default function AddTaskModal({ onClose, onSave }) {
     setValue(name, next, { shouldValidate: true })
   }
 
+  const formatScheduledDateTime = (value) => {
+    if (!value) return null
+    // datetime-local gives "YYYY-MM-DDTHH:mm" → convert to "dd-mm-yyyy hh:mm"
+    const [datePart, timePart] = value.split('T')
+    if (!datePart) return null
+    const [year, month, day] = datePart.split('-')
+    return `${day}-${month}-${year} ${timePart || '00:00'}`
+  }
+
   const onSubmit = async (data) => {
     setSaving(true)
     setSaveError('')
@@ -79,8 +83,7 @@ export default function AddTaskModal({ onClose, onSave }) {
       await onSave({
         taskIds: data.taskIds,
         taskGroupIds: data.taskGroupIds,
-        scheduledDateTime: data.scheduledDateTime,
-        assignedToUserId: data.assignedToUserId,
+        scheduledDateTime: formatScheduledDateTime(data.scheduledDateTime),
         status: data.status,
         notes: data.notes || null,
       })
@@ -146,23 +149,11 @@ export default function AddTaskModal({ onClose, onSave }) {
               </div>
             </div>
 
-            <div className="form-row form-row-3">
+            <div className="form-row form-row-2">
               <div className="form-group">
                 <label className="form-label">Scheduled Date / Time *</label>
                 <input type="datetime-local" className={`form-input${errors.scheduledDateTime ? ' input-error' : ''}`} {...register('scheduledDateTime')} />
                 {errors.scheduledDateTime && <span className="error-msg">{errors.scheduledDateTime.message}</span>}
-              </div>
-              <div className="form-group">
-                <label className="form-label">Assign To *</label>
-                <select className={`form-input${errors.assignedToUserId ? ' input-error' : ''}`} {...register('assignedToUserId')}>
-                  <option value="">Select user</option>
-                  {users.map((user) => (
-                    <option key={user.id} value={user.id}>
-                      {user.firstName} {user.lastName}
-                    </option>
-                  ))}
-                </select>
-                {errors.assignedToUserId && <span className="error-msg">{errors.assignedToUserId.message}</span>}
               </div>
               <div className="form-group">
                 <label className="form-label">Status *</label>

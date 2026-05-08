@@ -10,6 +10,7 @@ export const loginApi = (credentials) => apiPost('/auth/login', credentials)
 
 // Dashboard
 export const fetchDashboardStats = () => apiGet('/dashboard/summary')
+export const fetchDashboardTaskCount = (date) => apiGet('/dashboard/tasks/count', { date })
 export const fetchAlerts = () => USE_MOCK ? mock(MOCK_ALERTS) : apiGet('/alerts')
 
 // Patients
@@ -107,6 +108,12 @@ export const createNote = (patientId, data) => apiPost(`/patients/${patientId}/c
 export const fetchTasksRange = (patientId, from, to) => apiGet(`/patients/${patientId}/tasks/range`, { from, to })
 export const createTasks = (patientId, data) => apiPost(`/patients/${patientId}/tasks`, data)
 export const updateTask = (patientId, taskId, data) => apiPut(`/patients/${patientId}/tasks/${taskId}`, data)
+
+// Check-in / Check-out
+export const fetchActiveCheckin = (patientId) => apiGet(`/patients/${patientId}/checkin/active`)
+export const fetchCheckinHistory = (patientId, from, to) => apiGet(`/patients/${patientId}/checkin/history`, { from, to })
+export const checkInPatient = (patientId) => apiPost(`/patients/${patientId}/checkin`, {})
+export const checkOutPatient = (patientId, checkinId) => apiPut(`/patients/${patientId}/checkin/${checkinId}/checkout`, {})
 
 // Alerts
 export const fetchUnresolvedAlerts = (patientId) => apiGet(`/patients/${patientId}/alerts/unresolved`)

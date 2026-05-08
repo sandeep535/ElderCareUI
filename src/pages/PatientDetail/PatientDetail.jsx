@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useParams } from 'react-router-dom'
 import { StatusBadge, ErrorState } from '../../components/UI/UI'
 import { PatientBannerSkeleton, VitalsTableSkeleton, NoteSkeleton } from '../../components/Skeletons/Skeletons'
@@ -16,6 +16,7 @@ import {
   fetchMedications, fetchNotes, fetchSurgeries,
   createVital, createNote, createDiagnosis, createSurgery, createMedication,
   fetchUnresolvedAlerts, fetchTasksRange, createTasks, updateTask,
+  fetchActiveCheckin, checkInPatient, checkOutPatient, fetchCheckinHistory,
 } from '../../api/endpoints'
 import './PatientDetail.css'
 import '../../components/UI/UI.css'
@@ -28,6 +29,7 @@ const TABS = [
   { key: 'medications', label: 'Medications' },
   { key: 'notes',       label: 'Clinical Notes' },
   { key: 'history',     label: 'Medical History' },
+  { key: 'visits',      label: 'Visit History' },
 ]
 
 import { getVitalStatus, VITAL_STATUS_COLOR } from '../../utils/vitalsRange'
@@ -109,14 +111,14 @@ const getDateOffset = (days) => {
 
 const normalizeTask = (task) => ({
   id: task.id,
-  taskIds: task.taskIds || [],
-  taskGroupIds: task.taskGroupIds || [],
+  taskId: task.taskId || null,
+  taskGroupId: task.taskGroupId || null,
+  taskName: task.taskName || null,
+  taskGroupName: task.taskGroupName || null,
   scheduledDateTime: task.scheduledDateTime || task.scheduledDate || null,
   formattedDate: task.scheduledDateTime ? new Date(task.scheduledDateTime) : null,
   status: task.status || 'PENDING',
   notes: task.notes || '',
-  assignedToUserId: task.assignedToUserId || task.assignedTo?.userId || null,
-  assignedTo: task.assignedTo?.firstName ? `${task.assignedTo.firstName} ${task.assignedTo.lastName || ''}`.trim() : task.assignedToName || '--',
 })
 
 
@@ -132,6 +134,34 @@ export default function PatientDetail() {
   const [showMedication, setShowMedication] = useState(false)
   const [viewMedication, setViewMedication] = useState(null)
   const [showTaskModal, setShowTaskModal] = useState(false)
+  const [editingTaskId, setEditingTaskId] = useState(null)
+  const [editingStatus, setEditingStatus] = useState('')
+  const tabsRef = useRef(null)
+  const [canScrollLeft,  setCanScrollLeft]  = useState(false)
+  const [canScrollRight, setCanScrollRight] = useState(false)
+
+  const updateScrollButtons = () => {
+    const el = tabsRef.current
+    if (!el) return
+    setCanScrollLeft(el.scrollLeft > 0)
+    setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 1)
+  }
+
+  useEffect(() => {
+    const el = tabsRef.current
+    if (!el) return
+    updateScrollButtons()
+    el.addEventListener('scroll', updateScrollButtons)
+    const ro = new ResizeObserver(updateScrollButtons)
+    ro.observe(el)
+    return () => { el.removeEventListener('scroll', updateScrollButtons); ro.disconnect() }
+  }, [])
+
+  const scrollTabs = (dir) => {
+    const el = tabsRef.current
+    if (!el) return
+    el.scrollBy({ left: dir * 160, behavior: 'smooth' })
+  }
   const [taskFrom, setTaskFrom] = useState(getDateOffset(-7))
   const [taskTo, setTaskTo] = useState(getDateOffset(0))
   const [showAllAlerts, setShowAllAlerts] = useState(false)
@@ -139,6 +169,95 @@ export default function PatientDetail() {
   const [patientInfo,   setPatientInfo]  = useState(null)
   const [bannerLoading, setBannerLoading] = useState(true)
   const [bannerError,   setBannerError]  = useState(null)
+
+  // Check-in / Check-out
+  const [checkin,         setCheckin]         = useState(null)   // active checkin record or null
+  const [checkinLoading,  setCheckinLoading]  = useState(false)
+  const [checkinError,    setCheckinError]    = useState('')
+  const [liveDuration,    setLiveDuration]    = useState('')
+  const timerRef = useRef(null)
+
+  const calcDuration = (from, to) => {
+    const diffMs = (to ? new Date(to) : new Date()) - new Date(from)
+    if (diffMs < 0) return '0m'
+    const totalMins = Math.floor(diffMs / 60000)
+    const hrs  = Math.floor(totalMins / 60)
+    const mins = totalMins % 60
+    return hrs > 0 ? `${hrs}h ${mins}m` : `${mins}m`
+  }
+
+  // fetch active checkin on load
+  useEffect(() => {
+    if (!id) return
+    fetchActiveCheckin(id)
+      .then(res => {
+        const data = res?.data !== undefined ? res.data : res
+        setCheckin(data || null)
+      })
+      .catch(() => setCheckin(null))
+  }, [id])
+
+  // live timer while checked in
+  useEffect(() => {
+    if (timerRef.current) clearInterval(timerRef.current)
+    if (checkin && !checkin.checkOutTime) {
+      setLiveDuration(calcDuration(checkin.checkInTime))
+      timerRef.current = setInterval(() => {
+        setLiveDuration(calcDuration(checkin.checkInTime))
+      }, 60000)
+    }
+    return () => { if (timerRef.current) clearInterval(timerRef.current) }
+  }, [checkin])
+
+  const handleCheckIn = async () => {
+    setCheckinLoading(true)
+    setCheckinError('')
+    try {
+      const res = await checkInPatient(id)
+      const data = res?.data !== undefined ? res.data : res
+      setCheckin(data)
+    } catch (err) {
+      setCheckinError(err?.message || 'Check-in failed')
+    } finally {
+      setCheckinLoading(false)
+    }
+  }
+
+  const handleCheckOut = async () => {
+    if (!checkin?.id) return
+    setCheckinLoading(true)
+    setCheckinError('')
+    try {
+      const res = await checkOutPatient(id, checkin.id)
+      const data = res?.data !== undefined ? res.data : res
+      setCheckin(data)
+    } catch (err) {
+      setCheckinError(err?.message || 'Check-out failed')
+    } finally {
+      setCheckinLoading(false)
+    }
+  }
+
+  // Visit history
+  const [visitFrom,      setVisitFrom]      = useState(getDateOffset(-30))
+  const [visitTo,        setVisitTo]        = useState(getDateOffset(0))
+  const [visitHistory,   setVisitHistory]   = useState(null)
+  const [visitLoading,   setVisitLoading]   = useState(false)
+  const [visitError,     setVisitError]     = useState('')
+
+  const loadVisitHistory = async (from, to) => {
+    setVisitLoading(true)
+    setVisitError('')
+    try {
+      const res = await fetchCheckinHistory(id, from, to)
+      const data = res?.data !== undefined ? res.data : res
+      setVisitHistory(Array.isArray(data) ? data : [])
+    } catch (err) {
+      setVisitError(err?.message || 'Failed to load visit history')
+    } finally {
+      setVisitLoading(false)
+    }
+  }
 
   // fetch patient + medical + admission + NOK in parallel
   useEffect(() => {
@@ -270,6 +389,7 @@ export default function PatientDetail() {
     setActiveTab(key)
     if (key === 'notes' && !notes) loadNotes(id)
     if (key === 'tasks') loadTasks(id, taskFrom, taskTo)
+    if (key === 'visits' && !visitHistory) loadVisitHistory(visitFrom, visitTo)
   }
 
   const currentVitals = vitals?.[0] || patientInfo?.vitals
@@ -281,6 +401,8 @@ export default function PatientDetail() {
         <section className="patient-banner">
           <div className="banner-content">
             <div className="banner-left">
+
+              {/* Left column: avatar + demographics stacked */}
               <div className="banner-left-column">
                 <div className="patient-avatar-large">
                   <div className="patient-avatar-placeholder">
@@ -298,12 +420,14 @@ export default function PatientDetail() {
                 </div>
               </div>
 
+              {/* Main info: name/meta + sections grid */}
               <div className="patient-info-main">
                 <h2 className="patient-name-large">{patientInfo.name}</h2>
                 <div className="patient-meta">
                   <span className="patient-id-badge">ID: {patientInfo.patientId}</span>
                   <StatusBadge status={patientInfo.completionStatus === 'INCOMPLETE' ? 'warning' : 'stable'} />
                 </div>
+
                 <div className="banner-sections-grid">
                   <div className="banner-section">
                     <h4 className="banner-section-title">Care Team</h4>
@@ -314,11 +438,10 @@ export default function PatientDetail() {
                       </div>
                     ))}
                   </div>
+
                   <div className="banner-section">
                     <h4 className="banner-section-title">Medical Alerts</h4>
-                    {alerts.length === 0 && (
-                      <span style={{ fontSize: '0.8125rem', color: 'var(--color-gray)' }}>No active alerts</span>
-                    )}
+                    {alerts.length === 0 && <span style={{ fontSize: '0.8125rem', color: 'var(--color-gray)' }}>No active alerts</span>}
                     {alerts.slice(0, 1).map(a => (
                       <div key={a.id} className={`banner-alert-item ${a.priority === 'HIGH' ? 'alert-warning' : 'alert-info'}`}>
                         <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2"/><path d="M12 16V12M12 8H12.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
@@ -329,10 +452,7 @@ export default function PatientDetail() {
                       </div>
                     ))}
                     {alerts.length > 1 && (
-                      <button
-                        onClick={() => setShowAllAlerts(true)}
-                        style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--color-primary)', background: 'none', border: 'none', cursor: 'pointer', padding: '2px 0', textAlign: 'left' }}
-                      >
+                      <button onClick={() => setShowAllAlerts(true)} style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--color-primary)', background: 'none', border: 'none', cursor: 'pointer', padding: '2px 0', textAlign: 'left' }}>
                         +{alerts.length - 1} more alert{alerts.length - 1 > 1 ? 's' : ''}
                       </button>
                     )}
@@ -340,10 +460,65 @@ export default function PatientDetail() {
                     <div className="banner-detail-row"><span className="banner-detail-label">Diagnoses</span><span className="banner-detail-value">{diagnoses?.length ?? '--'}</span></div>
                     <div className="banner-detail-row"><span className="banner-detail-label">NOK</span><span className="banner-detail-value">{patientInfo.nok?.length ?? '--'}</span></div>
                   </div>
+
+                  {/* Visit Tracking — 3rd card in the sections grid */}
+                  <div className="banner-section visit-tracking-card">
+                    <div className="visit-tracking-header">
+                      <svg viewBox="0 0 24 24" fill="none" style={{ width: 13, height: 13 }}>
+                        <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2"/>
+                        <path d="M12 6v6l4 2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                      <span>Visit Tracking</span>
+                    </div>
+                    {checkinError && <p style={{ fontSize: '0.7rem', color: '#EF4444', margin: '2px 0 0' }}>{checkinError}</p>}
+                    {!checkin && (
+                      <div className="visit-tracking-body">
+                        <span className="visit-tracking-empty">No active visit</span>
+                        <button className="visit-tracking-btn visit-tracking-btn--in" onClick={handleCheckIn} disabled={checkinLoading}>
+                          {checkinLoading ? '...' : 'Check In'}
+                        </button>
+                      </div>
+                    )}
+                    {checkin && !checkin.checkOutTime && (
+                      <div className="visit-tracking-body">
+                        <div className="visit-tracking-info">
+                          <span className="visit-tracking-label">Check-in</span>
+                          <span className="visit-tracking-value visit-tracking-value--green">{formatDateTimeDisplay(new Date(checkin.checkInTime))}</span>
+                        </div>
+                        <div className="visit-tracking-info">
+                          <span className="visit-tracking-label">Duration</span>
+                          <span className="visit-tracking-value visit-tracking-value--primary">{liveDuration}</span>
+                        </div>
+                        <button className="visit-tracking-btn visit-tracking-btn--out" onClick={handleCheckOut} disabled={checkinLoading}>
+                          {checkinLoading ? '...' : 'Check Out'}
+                        </button>
+                      </div>
+                    )}
+                    {checkin && checkin.checkOutTime && (
+                      <div className="visit-tracking-body">
+                        <div className="visit-tracking-info">
+                          <span className="visit-tracking-label">In</span>
+                          <span className="visit-tracking-value">{formatDateTimeDisplay(new Date(checkin.checkInTime))}</span>
+                        </div>
+                        <div className="visit-tracking-info">
+                          <span className="visit-tracking-label">Out</span>
+                          <span className="visit-tracking-value">{formatDateTimeDisplay(new Date(checkin.checkOutTime))}</span>
+                        </div>
+                        <div className="visit-tracking-info">
+                          <span className="visit-tracking-label">Duration</span>
+                          <span className="visit-tracking-value" style={{ fontWeight: 700 }}>{calcDuration(checkin.checkInTime, checkin.checkOutTime)}</span>
+                        </div>
+                        <button className="visit-tracking-btn visit-tracking-btn--in" onClick={handleCheckIn} disabled={checkinLoading}>
+                          {checkinLoading ? '...' : 'New Check In'}
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
 
+            {/* Right: Vitals */}
             <div className="banner-right">
               <div className="vital-signs-summary">
                 <h3 className="vitals-title">Current Vitals</h3>
@@ -367,12 +542,24 @@ export default function PatientDetail() {
 
       {/* EMR Tabs */}
       <div className="emr-content">
-        <div className="emr-tabs">
-          {TABS.map(t => (
-            <button key={t.key} className={`emr-tab${activeTab === t.key ? ' active' : ''}`} onClick={() => handleTabChange(t.key)}>
-              {t.label}
+        <div className="emr-tabs-wrapper">
+          {canScrollLeft && (
+            <button className="emr-tabs-arrow emr-tabs-arrow--left" onClick={() => scrollTabs(-1)}>
+              <svg viewBox="0 0 24 24" fill="none"><path d="M15 18L9 12L15 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
             </button>
-          ))}
+          )}
+          <div className="emr-tabs" ref={tabsRef}>
+            {TABS.map(t => (
+              <button key={t.key} className={`emr-tab${activeTab === t.key ? ' active' : ''}`} onClick={() => handleTabChange(t.key)}>
+                {t.label}
+              </button>
+            ))}
+          </div>
+          {canScrollRight && (
+            <button className="emr-tabs-arrow emr-tabs-arrow--right" onClick={() => scrollTabs(1)}>
+              <svg viewBox="0 0 24 24" fill="none"><path d="M9 18L15 12L9 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+            </button>
+          )}
         </div>
 
         {activeTab === 'overview' && (
@@ -478,43 +665,97 @@ export default function PatientDetail() {
                     <thead>
                       <tr>
                         <th>Scheduled</th>
-                        <th>Tasks</th>
-                        <th>Groups</th>
-                        <th>Assigned To</th>
+                        <th>Task</th>
+                        <th>Group</th>
                         <th>Status</th>
                         <th>Notes</th>
                         <th>Action</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {tasks?.length ? tasks.map((task, i) => (
-                        <tr key={task.id || i}>
-                          <td>{task.formattedDate ? formatDateTimeDisplay(task.formattedDate) : '--'}</td>
-                          <td>{Array.isArray(task.taskIds) ? task.taskIds.join(', ') : '--'}</td>
-                          <td>{Array.isArray(task.taskGroupIds) ? task.taskGroupIds.join(', ') : '--'}</td>
-                          <td>{task.assignedTo || '--'}</td>
-                          <td>{task.status}</td>
-                          <td>{task.notes || '--'}</td>
-                          <td>
-                            {task.status !== 'COMPLETED' ? (
-                              <button className="btn-secondary btn-sm" onClick={() => handleUpdateTask(task.id, {
-                                taskIds: task.taskIds,
-                                taskGroupIds: task.taskGroupIds,
-                                scheduledDateTime: task.scheduledDateTime,
-                                status: 'COMPLETED',
-                                notes: task.notes,
-                                assignedToUserId: task.assignedToUserId,
-                              })}>
-                                Complete
-                              </button>
-                            ) : (
-                              <span style={{ color: '#10B981', fontWeight: 600 }}>Done</span>
-                            )}
-                          </td>
-                        </tr>
-                      )) : (
+                      {tasks?.length ? tasks.map((task, i) => {
+                        const isEditing = editingTaskId === task.id
+                        return (
+                          <tr key={task.id || i}>
+                            <td>{task.formattedDate ? formatDateTimeDisplay(task.formattedDate) : '--'}</td>
+                            <td>{task.taskName || '--'}</td>
+                            <td>{task.taskGroupName || '--'}</td>
+                            <td>
+                              {isEditing ? (
+                                <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                                  {['PENDING', 'IN_PROGRESS', 'COMPLETED'].map(s => (
+                                    <button
+                                      key={s}
+                                      onClick={() => setEditingStatus(s)}
+                                      style={{
+                                        padding: '2px 8px',
+                                        fontSize: '0.75rem',
+                                        fontWeight: 600,
+                                        borderRadius: '4px',
+                                        border: '1.5px solid',
+                                        cursor: 'pointer',
+                                        borderColor: editingStatus === s ? 'var(--color-primary)' : 'var(--color-border)',
+                                        background: editingStatus === s ? 'var(--color-primary)' : 'transparent',
+                                        color: editingStatus === s ? '#fff' : 'var(--color-text)',
+                                      }}
+                                    >
+                                      {s === 'IN_PROGRESS' ? 'In Progress' : s.charAt(0) + s.slice(1).toLowerCase()}
+                                    </button>
+                                  ))}
+                                </div>
+                              ) : (
+                                <span>{task.status}</span>
+                              )}
+                            </td>
+                            <td>{task.notes || '--'}</td>
+                            <td>
+                              {isEditing ? (
+                                <div style={{ display: 'flex', gap: '6px' }}>
+                                  <button
+                                    className="btn-primary btn-sm"
+                                    onClick={async () => {
+                                      await handleUpdateTask(task.id, {
+                                        taskIds: task.taskId ? [task.taskId] : null,
+                                        taskGroupIds: task.taskGroupId ? [task.taskGroupId] : null,
+                                        scheduledDateTime: task.formattedDate ? formatDateTimeDisplay(task.formattedDate) : null,
+                                        status: editingStatus,
+                                        notes: task.notes || null,
+                                      })
+                                      setEditingTaskId(null)
+                                    }}
+                                  >
+                                    Save
+                                  </button>
+                                  <button
+                                    className="btn-secondary btn-sm"
+                                    onClick={() => setEditingTaskId(null)}
+                                  >
+                                    Cancel
+                                  </button>
+                                </div>
+                              ) : task.status === 'COMPLETED' ? (
+                                <span style={{ color: '#10B981', fontWeight: 600 }}>Done</span>
+                              ) : (
+                                <button
+                                  className="btn-secondary btn-sm"
+                                  onClick={() => {
+                                    setEditingTaskId(task.id)
+                                    setEditingStatus(task.status)
+                                  }}
+                                >
+                                  <svg viewBox="0 0 24 24" fill="none" style={{ width: 13, height: 13 }}>
+                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                  </svg>
+                                  Edit
+                                </button>
+                              )}
+                            </td>
+                          </tr>
+                        )
+                      }) : (
                         <tr>
-                          <td colSpan="7" style={{ textAlign: 'center', color: 'var(--color-gray)' }}>
+                          <td colSpan="6" style={{ textAlign: 'center', color: 'var(--color-gray)' }}>
                             No tasks found for the selected date range.
                           </td>
                         </tr>
@@ -634,6 +875,100 @@ export default function PatientDetail() {
                   </div>
                 ))}
               </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'visits' && (
+          <div className="emr-card">
+            <div className="emr-card-header">
+              <h3 className="emr-card-title">Visit History</h3>
+            </div>
+            <div className="emr-card-body">
+              {/* Date range filter */}
+              <div className="task-filter-row">
+                <label className="form-label">From</label>
+                <input
+                  type="date"
+                  className="form-input"
+                  value={visitFrom}
+                  onChange={(e) => setVisitFrom(e.target.value)}
+                />
+                <label className="form-label">To</label>
+                <input
+                  type="date"
+                  className="form-input"
+                  value={visitTo}
+                  onChange={(e) => setVisitTo(e.target.value)}
+                />
+                <button
+                  className="btn-primary btn-sm"
+                  onClick={() => loadVisitHistory(visitFrom, visitTo)}
+                  disabled={visitLoading}
+                >
+                  {visitLoading ? 'Loading...' : 'Search'}
+                </button>
+              </div>
+
+              {visitError && (
+                <p style={{ color: '#EF4444', fontSize: '0.875rem', margin: '8px 0' }}>{visitError}</p>
+              )}
+
+              {visitLoading ? <VitalsTableSkeleton /> : (
+                <div className="vitals-table">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>#</th>
+                        <th>Check-in</th>
+                        <th>Check-out</th>
+                        <th>Duration</th>
+                        <th>Recorded By</th>
+                        <th>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {visitHistory?.length ? visitHistory.map((v, i) => {
+                        const isActive = !v.checkOutTime
+                        const duration = v.checkInTime
+                          ? calcDuration(v.checkInTime, v.checkOutTime || undefined)
+                          : '--'
+                        return (
+                          <tr key={v.id || i}>
+                            <td>{i + 1}</td>
+                            <td>{v.checkInTime ? formatDateTimeDisplay(new Date(v.checkInTime)) : '--'}</td>
+                            <td>
+                              {isActive
+                                ? <span style={{ color: '#10B981', fontWeight: 600 }}>Active</span>
+                                : formatDateTimeDisplay(new Date(v.checkOutTime))
+                              }
+                            </td>
+                            <td style={{ fontWeight: 600 }}>
+                              {isActive
+                                ? <span style={{ color: 'var(--color-primary)' }}>{calcDuration(v.checkInTime)} (ongoing)</span>
+                                : duration
+                              }
+                            </td>
+                            <td>{v.createdBy || '--'}</td>
+                            <td>
+                              {isActive
+                                ? <span style={{ color: '#10B981', fontWeight: 600, fontSize: '0.8rem' }}>● Checked In</span>
+                                : <span style={{ color: 'var(--color-gray)', fontSize: '0.8rem' }}>Completed</span>
+                              }
+                            </td>
+                          </tr>
+                        )
+                      }) : (
+                        <tr>
+                          <td colSpan="6" style={{ textAlign: 'center', color: 'var(--color-gray)' }}>
+                            No visits found for the selected date range.
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
           </div>
         )}

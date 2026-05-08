@@ -1,0 +1,1048 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <title>Patient Details - VeoHome</title>
+    <link rel="stylesheet" href="theme.css">
+    <link rel="stylesheet" href="nurse-dashboard.css">
+    <link rel="stylesheet" href="patient-detail.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body class="dashboard-body">
+    <!-- Sidebar -->
+    <aside class="dashboard-sidebar">
+        <div class="sidebar-header">
+            <a href="../website/veohome.html" class="sidebar-logo">
+                <img src="assets/VeoHome.png" alt="VeoHome" class="sidebar-logo-icon">
+                <span class="sidebar-logo-text">VeoHome</span>
+            </a>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="nurse-dashboard.html" class="nav-item">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="3" y="3" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <rect x="14" y="3" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <rect x="3" y="14" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <rect x="14" y="14" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span>Dashboard</span>
+            </a>
+            <a href="patient-detail.html" class="nav-item active">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M6 21V19C6 17.9391 6.42143 16.9217 7.17157 16.1716C7.92172 15.4214 8.93913 15 10 15H14C15.0609 15 16.0783 15.4214 16.8284 16.1716C17.5786 16.9217 18 17.9391 18 19V21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span>Patients</span>
+            </a>
+            <a href="nurse-records.html" class="nav-item">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M2 17L12 22L22 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M2 12L12 17L22 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span>Records</span>
+            </a>
+            <a href="nurse-alerts.html" class="nav-item">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M18 8A6 6 0 0 0 6 8C6 11.3137 9 12 9 12C9 12 12 11.3137 12 8Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M9 12L9 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M15 12L15 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M9 16C9 17.6569 10.3431 19 12 19C13.6569 19 15 17.6569 15 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span>Alerts</span>
+                <span class="nav-badge">3</span>
+            </a>
+            <a href="nurse-schedule.html" class="nav-item">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M12 6V12L16 14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span>Schedule</span>
+            </a>
+            <a href="nurse-reports.html" class="nav-item">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M16 2V6M8 2V6M3 10H21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span>Reports</span>
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <a href="login.html" class="nav-item logout">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M9 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M16 17L21 12L16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M21 12H9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span>Logout</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="dashboard-main">
+        <!-- Header -->
+        <header class="dashboard-header">
+            <div class="header-left">
+                <button class="btn-back" onclick="window.history.back()">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M19 12H5M12 19L5 12L12 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <span>Back</span>
+                </button>
+                <div class="header-title-section">
+                    <h1 class="page-title">Patient Details</h1>
+                </div>
+            </div>
+            <div class="header-right">
+                <button class="header-btn notification-btn">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M18 8A6 6 0 0 0 6 8C6 11.3137 9 12 9 12C9 12 12 11.3137 12 8Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M9 12L9 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M15 12L15 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M9 16C9 17.6569 10.3431 19 12 19C13.6569 19 15 17.6569 15 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <span class="notification-badge">3</span>
+                </button>
+                <div class="user-profile">
+                    <div class="profile-avatar">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M6 21V19C6 17.9391 6.42143 16.9217 7.17157 16.1716C7.92172 15.4214 8.93913 15 10 15H14C15.0609 15 16.0783 15.4214 16.8284 16.1716C17.5786 16.9217 18 17.9391 18 19V21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <div class="profile-info">
+                        <span class="profile-name">Sarah Johnson</span>
+                        <span class="profile-role">Nurse</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Patient Banner -->
+        <section class="patient-banner">
+            <div class="banner-content">
+                <div class="banner-left">
+                    <div class="banner-left-column">
+                    <div class="patient-avatar-large">
+                        <img src="assets/Margaret Lee.png" alt="Margaret Lee" class="patient-avatar-image">
+                    </div>
+                        <div class="banner-section demographics-section">
+                            <h4 class="banner-section-title">Demographics</h4>
+                            <div class="banner-section-content">
+                                <div class="banner-detail-row">
+                                    <span class="banner-detail-label">Age</span>
+                                    <span class="banner-detail-value">78 years</span>
+                                </div>
+                                <div class="banner-detail-row">
+                                    <span class="banner-detail-label">Gender</span>
+                                    <span class="banner-detail-value">Female</span>
+                                </div>
+                                <div class="banner-detail-row">
+                                    <span class="banner-detail-label">DOB</span>
+                                    <span class="banner-detail-value">March 15, 1946</span>
+                                </div>
+                                <div class="banner-detail-row">
+                                    <span class="banner-detail-label">Blood Type</span>
+                                    <span class="banner-detail-value">O+</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="patient-info-main">
+                        <div class="patient-header-section">
+                            <div class="patient-name-section">
+                                <h2 class="patient-name-large">Margaret Lee</h2>
+                                <div class="patient-meta">
+                                    <span class="patient-id-badge">ID: PL-2024-001</span>
+                                    <span class="patient-status-badge status-stable">Stable</span>
+                                    <span class="patient-aol-badge">AOL 45 days</span>
+                                    <div class="birthday-countdown-inline">
+                                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="birthday-cake-icon">
+                                            <path d="M12 2L10 4H14L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                            <rect x="4" y="4" width="16" height="12" rx="1" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                            <path d="M6 8H8M16 8H18M6 12H8M16 12H18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                            <circle cx="10" cy="16" r="1" fill="currentColor"/>
+                                            <circle cx="14" cy="16" r="1" fill="currentColor"/>
+                                        </svg>
+                                        <span class="birthday-days-inline" id="birthday-countdown">42 days</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="banner-sections-grid">
+                            <div class="banner-section">
+                                <h4 class="banner-section-title">Care Team</h4>
+                                <div class="banner-section-content">
+                                    <div class="banner-detail-row">
+                                        <span class="banner-detail-label">Primary Physician</span>
+                                        <span class="banner-detail-value">Dr. Michael Chen</span>
+                                    </div>
+                                    <div class="banner-detail-row">
+                                        <span class="banner-detail-label">Attending Nurse</span>
+                                        <span class="banner-detail-value">Sarah Johnson, RN</span>
+                                    </div>
+                                    <div class="banner-detail-row">
+                                        <span class="banner-detail-label">Specialist</span>
+                                        <span class="banner-detail-value">Dr. Emily Wong (Cardio)</span>
+                                    </div>
+                                    <div class="banner-detail-row">
+                                        <span class="banner-detail-label">Last Assessment</span>
+                                        <span class="banner-detail-value">2 hours ago</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="banner-section">
+                                <h4 class="banner-section-title">Medical Alerts</h4>
+                                <div class="banner-section-content">
+                                    <div class="banner-alert-item alert-warning">
+                                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M10.29 3.86L1.82 18C1.64538 18.3024 1.55299 18.6453 1.55201 18.9945C1.55103 19.3437 1.64151 19.6871 1.81445 19.9905C1.98738 20.2939 2.23675 20.5467 2.53773 20.7238C2.83871 20.9009 3.18082 20.9962 3.53 21H20.47C20.8192 20.9962 21.1613 20.9009 21.4623 20.7238C21.7633 20.5467 22.0126 20.2939 22.1856 19.9905C22.3585 19.6871 22.449 19.3437 22.448 18.9945C22.447 18.6453 22.3546 18.3024 22.18 18L13.71 3.86C13.5318 3.56611 13.2807 3.32311 12.9812 3.15448C12.6817 2.98585 12.3438 2.89725 12 2.89725C11.6562 2.89725 11.3183 2.98585 11.0188 3.15448C10.7193 3.32311 10.4682 3.56611 10.29 3.86Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                            <path d="M12 9V13M12 17H12.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                        </svg>
+                                        <span>Penicillin Allergy</span>
+                                    </div>
+                                    <div class="banner-alert-item alert-info">
+                                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                            <path d="M12 16V12M12 8H12.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                        </svg>
+                                        <span>Fall Risk</span>
+                                    </div>
+                                    <div class="banner-detail-row">
+                                        <span class="banner-detail-label">Active Medications</span>
+                                        <span class="banner-detail-value">3</span>
+                                    </div>
+                                    <div class="banner-detail-row">
+                                        <span class="banner-detail-label">Active Diagnoses</span>
+                                        <span class="banner-detail-value">3</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="banner-right">
+                    <div class="vital-signs-summary">
+                        <h3 class="vitals-title">Current Vitals</h3>
+                        <div class="vitals-grid">
+                            <div class="vital-item">
+                                <span class="vital-label">BP</span>
+                                <span class="vital-value">120/80</span>
+                            </div>
+                            <div class="vital-item">
+                                <span class="vital-label">HR</span>
+                                <span class="vital-value">72 bpm</span>
+                            </div>
+                            <div class="vital-item">
+                                <span class="vital-label">Temp</span>
+                                <span class="vital-value">98.6°F</span>
+                            </div>
+                            <div class="vital-item">
+                                <span class="vital-label">SpO₂</span>
+                                <span class="vital-value">98%</span>
+                            </div>
+                        </div>
+                        <div class="vitals-footer">
+                            <span class="vitals-updated">Last updated: 2 hours ago</span>
+                            <span class="vitals-location">Room 204, Bed A</span>
+                            <button class="btn-record-vitals">Record Vitals</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- EMR Content -->
+        <div class="emr-content">
+            <!-- Tabs Navigation -->
+            <div class="emr-tabs">
+                <button class="emr-tab active" data-tab="overview">Overview</button>
+                <button class="emr-tab" data-tab="vitals">Vital Signs</button>
+                <button class="emr-tab" data-tab="medications">Medications</button>
+                <button class="emr-tab" data-tab="notes">Clinical Notes</button>
+                <button class="emr-tab" data-tab="history">Medical History</button>
+            </div>
+
+            <!-- Tab Content -->
+            <div class="emr-tab-content">
+                <!-- Overview Tab -->
+                <div class="tab-panel active" id="overview">
+                    <div class="emr-grid">
+                        <!-- Active Diagnoses -->
+                        <div class="emr-card">
+                            <div class="emr-card-header">
+                                <h3 class="emr-card-title">Active Diagnoses</h3>
+                                <button class="btn-primary btn-sm">
+                                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M12 5V19M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                    <span>Add Diagnosis</span>
+                                </button>
+                            </div>
+                            <div class="emr-card-body">
+                                <div class="diagnosis-item">
+                                    <span class="diagnosis-name">Hypertension</span>
+                                    <span class="diagnosis-date">Diagnosed: Jan 15, 2024</span>
+                                </div>
+                                <div class="diagnosis-item">
+                                    <span class="diagnosis-name">Type 2 Diabetes</span>
+                                    <span class="diagnosis-date">Diagnosed: Jan 15, 2024</span>
+                                </div>
+                                <div class="diagnosis-item">
+                                    <span class="diagnosis-name">Mild Cognitive Impairment</span>
+                                    <span class="diagnosis-date">Diagnosed: Feb 1, 2024</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Recent Activity -->
+                        <div class="emr-card">
+                            <div class="emr-card-header">
+                                <h3 class="emr-card-title">Recent Activity</h3>
+                                <button class="btn-view-all">View All</button>
+                            </div>
+                            <div class="emr-card-body">
+                                <div class="activity-timeline">
+                                    <div class="activity-item">
+                                        <div class="activity-icon activity-icon-vital">
+                                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M12 2V6M12 18V22M6 12H2M22 12H18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                                <circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                            </svg>
+                                        </div>
+                                        <div class="activity-content">
+                                            <h4 class="activity-title">Vital Signs Recorded</h4>
+                                            <p class="activity-description">BP: 120/80, HR: 72 bpm, Temp: 98.6°F, SpO₂: 98%</p>
+                                            <span class="activity-time">2 hours ago</span>
+                                        </div>
+                                    </div>
+                                    <div class="activity-item">
+                                        <div class="activity-icon activity-icon-medication">
+                                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                                <path d="M9 3V9M15 3V9M3 15H21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                            </svg>
+                                        </div>
+                                        <div class="activity-content">
+                                            <h4 class="activity-title">Medication Administered</h4>
+                                            <p class="activity-description">Metformin 500mg - Morning dose</p>
+                                            <span class="activity-time">4 hours ago</span>
+                                        </div>
+                                    </div>
+                                    <div class="activity-item">
+                                        <div class="activity-icon activity-icon-note">
+                                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M14 2H6C5.46957 2 4.96086 2.21071 4.58579 2.58579C4.21071 2.96086 4 3.46957 4 4V20C4 20.5304 4.21071 21.0391 4.58579 21.4142C4.96086 21.7893 5.46957 22 6 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V8L14 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                                <path d="M14 2V8H20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                            </svg>
+                                        </div>
+                                        <div class="activity-content">
+                                            <h4 class="activity-title">Clinical Note Added</h4>
+                                            <p class="activity-description">Patient reported feeling well. No complaints.</p>
+                                            <span class="activity-time">1 day ago</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Vital Signs Tab -->
+                <div class="tab-panel" id="vitals">
+                    <div class="emr-card">
+                        <div class="emr-card-header">
+                            <h3 class="emr-card-title">Vital Signs History</h3>
+                            <button class="btn-primary btn-sm btn-record-vitals">
+                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M12 5V19M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                                <span>Record Vitals</span>
+                            </button>
+                        </div>
+                        <div class="emr-card-body">
+                            <div class="vitals-table">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Date & Time</th>
+                                            <th>BP</th>
+                                            <th>HR</th>
+                                            <th>Temp</th>
+                                            <th>SpO₂</th>
+                                            <th>Recorded By</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Today, 10:30 AM</td>
+                                            <td>120/80</td>
+                                            <td>72 bpm</td>
+                                            <td>98.6°F</td>
+                                            <td>98%</td>
+                                            <td>Sarah Johnson</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Today, 6:30 AM</td>
+                                            <td>118/78</td>
+                                            <td>70 bpm</td>
+                                            <td>98.4°F</td>
+                                            <td>99%</td>
+                                            <td>Sarah Johnson</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Yesterday, 10:30 AM</td>
+                                            <td>122/82</td>
+                                            <td>74 bpm</td>
+                                            <td>98.8°F</td>
+                                            <td>97%</td>
+                                            <td>Sarah Johnson</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Yesterday, 6:30 AM</td>
+                                            <td>119/79</td>
+                                            <td>71 bpm</td>
+                                            <td>98.5°F</td>
+                                            <td>98%</td>
+                                            <td>Sarah Johnson</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Medications Tab -->
+                <div class="tab-panel" id="medications">
+                    <div class="emr-card">
+                        <div class="emr-card-header">
+                            <h3 class="emr-card-title">Current Medications</h3>
+                            <button type="button" class="btn-primary btn-sm btn-add-medication" id="openAddMedicationModal" aria-haspopup="dialog" aria-controls="addMedicationModal">
+                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M12 5V19M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                                <span>Add Medication</span>
+                            </button>
+                        </div>
+                        <div class="emr-card-body">
+                            <div class="medications-list">
+                                <div class="medication-item">
+                                    <div class="medication-info">
+                                        <h4 class="medication-name">Metformin</h4>
+                                        <p class="medication-details">500mg tablet - Take 1 tablet twice daily with meals</p>
+                                    </div>
+                                    <div class="medication-status">
+                                        <span class="medication-status-badge active">Active</span>
+                                        <span class="medication-next-dose">Next dose: 6:00 PM</span>
+                                    </div>
+                                </div>
+                                <div class="medication-item">
+                                    <div class="medication-info">
+                                        <h4 class="medication-name">Lisinopril</h4>
+                                        <p class="medication-details">10mg tablet - Take 1 tablet once daily in the morning</p>
+                                    </div>
+                                    <div class="medication-status">
+                                        <span class="medication-status-badge active">Active</span>
+                                        <span class="medication-next-dose">Next dose: Tomorrow 8:00 AM</span>
+                                    </div>
+                                </div>
+                                <div class="medication-item">
+                                    <div class="medication-info">
+                                        <h4 class="medication-name">Aspirin</h4>
+                                        <p class="medication-details">81mg tablet - Take 1 tablet once daily</p>
+                                    </div>
+                                    <div class="medication-status">
+                                        <span class="medication-status-badge active">Active</span>
+                                        <span class="medication-next-dose">Next dose: Tomorrow 8:00 AM</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Clinical Notes Tab -->
+                <div class="tab-panel" id="notes">
+                    <div class="emr-card">
+                        <div class="emr-card-header">
+                            <h3 class="emr-card-title">Clinical Notes</h3>
+                            <button class="btn-primary btn-sm btn-add-note">
+                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M12 5V19M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                                <span>Add Note</span>
+                            </button>
+                        </div>
+                        <div class="emr-card-body">
+                            <div class="notes-list">
+                                <div class="note-item">
+                                    <div class="note-header">
+                                        <span class="note-author">Sarah Johnson, RN</span>
+                                        <span class="note-date">Today, 2:30 PM</span>
+                                    </div>
+                                    <p class="note-content">Patient reported feeling well. No complaints. Vital signs stable. Patient engaged in light activities. Appetite good.</p>
+                                </div>
+                                <div class="note-item">
+                                    <div class="note-header">
+                                        <span class="note-author">Sarah Johnson, RN</span>
+                                        <span class="note-date">Yesterday, 10:15 AM</span>
+                                    </div>
+                                    <p class="note-content">Morning assessment completed. Patient alert and oriented. Blood pressure slightly elevated but within acceptable range. Medication administered as scheduled.</p>
+                                </div>
+                                <div class="note-item">
+                                    <div class="note-header">
+                                        <span class="note-author">Dr. Michael Chen</span>
+                                        <span class="note-date">2 days ago, 3:00 PM</span>
+                                    </div>
+                                    <p class="note-content">Follow-up visit. Patient's condition stable. Continue current medication regimen. Monitor blood glucose levels. Next review in 2 weeks.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Medical History Tab -->
+                <div class="tab-panel" id="history">
+                    <div class="emr-grid">
+                        <div class="emr-card">
+                            <div class="emr-card-header">
+                                <h3 class="emr-card-title">Surgical History</h3>
+                                <button class="btn-primary btn-sm btn-add-surgery">
+                                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M12 5V19M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                    <span>Add Surgery</span>
+                                </button>
+                            </div>
+                            <div class="emr-card-body">
+                                <div class="history-item">
+                                    <span class="history-condition">Cataract Surgery (Right Eye)</span>
+                                    <span class="history-year">2015</span>
+                                </div>
+                                <div class="history-item">
+                                    <span class="history-condition">Hip Replacement</span>
+                                    <span class="history-year">2017</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Add Diagnosis Modal -->
+    <div class="modal-overlay" id="addDiagnosisModal">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h2 class="modal-title">Add Diagnosis</h2>
+                <button class="modal-close" id="closeDiagnosisModal">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form class="diagnosis-form" id="diagnosisForm">
+                    <div class="form-group">
+                        <label class="form-label">Diagnosis Name *</label>
+                        <input type="text" class="form-input" id="diagnosisName" placeholder="e.g., Hypertension, Diabetes, etc." required>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Diagnosis Date *</label>
+                            <input type="date" class="form-input" id="diagnosisDate" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Status</label>
+                            <select class="form-input" id="diagnosisStatus">
+                                <option value="active">Active</option>
+                                <option value="resolved">Resolved</option>
+                                <option value="chronic">Chronic</option>
+                                <option value="monitoring">Monitoring</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">ICD-10 Code (Optional)</label>
+                        <input type="text" class="form-input" id="icdCode" placeholder="e.g., I10, E11.9">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Diagnosed By</label>
+                        <input type="text" class="form-input" id="diagnosedBy" placeholder="e.g., Dr. Michael Chen">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Notes (Optional)</label>
+                        <textarea class="form-textarea" id="diagnosisNotes" placeholder="Add any additional notes about the diagnosis..." rows="4"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" id="cancelDiagnosis">Cancel</button>
+                <button class="btn-primary" id="saveDiagnosis">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M20 6L9 17L4 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <span>Save Diagnosis</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Clinical Note Modal -->
+    <div class="modal-overlay" id="addNoteModal">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h2 class="modal-title">Add Clinical Note</h2>
+                <button class="modal-close" id="closeNoteModal">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form class="note-form" id="noteForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Note Type *</label>
+                            <select class="form-input" id="noteType" required>
+                                <option value="">Select note type</option>
+                                <option value="progress">Progress Note</option>
+                                <option value="assessment">Assessment</option>
+                                <option value="observation">Observation</option>
+                                <option value="incident">Incident Report</option>
+                                <option value="care-plan">Care Plan Update</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Date & Time *</label>
+                            <input type="datetime-local" class="form-input" id="noteDateTime" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Note Title</label>
+                        <input type="text" class="form-input" id="noteTitle" placeholder="Brief title for this note">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Clinical Note *</label>
+                        <textarea class="form-textarea" id="noteContent" placeholder="Enter your clinical note here..." rows="8" required></textarea>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Recorded By</label>
+                            <input type="text" class="form-input" id="noteAuthor" placeholder="e.g., Sarah Johnson, RN">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Priority</label>
+                            <select class="form-input" id="notePriority">
+                                <option value="normal">Normal</option>
+                                <option value="high">High</option>
+                                <option value="urgent">Urgent</option>
+                            </select>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" id="cancelNote">Cancel</button>
+                <button class="btn-primary" id="saveNote">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M20 6L9 17L4 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <span>Save Note</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Medication (CPOE-style order) Modal -->
+    <div class="modal-overlay" id="addMedicationModal" role="dialog" aria-modal="true" aria-labelledby="addMedicationModalTitle">
+        <div class="modal-container modal-large">
+            <div class="modal-header">
+                <h2 class="modal-title" id="addMedicationModalTitle">New medication order (CPOE)</h2>
+                <button type="button" class="modal-close" id="closeMedicationModal" aria-label="Close">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p class="cpoe-hint">Fields follow common inpatient CPOE expectations: drug identification, dose/route/frequency, schedule, prescriber, patient instructions, and safety attestations. Production systems would validate against formulary, allergies, and interaction engines.</p>
+                <form id="medicationOrderForm" class="medication-cpoe-form" novalidate>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="medDrugName">Medication name *</label>
+                            <input type="text" class="form-input" id="medDrugName" name="medDrugName" required autocomplete="off" placeholder="Search formulary / display name (e.g. Metformin)">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="medRxNorm">RxNorm / product code (optional)</label>
+                            <input type="text" class="form-input" id="medRxNorm" name="medRxNorm" placeholder="e.g. 860975">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="medOrderPriority">Order priority *</label>
+                            <select class="form-input" id="medOrderPriority" name="medOrderPriority" required>
+                                <option value="routine" selected>Routine</option>
+                                <option value="now">Now (single dose)</option>
+                                <option value="stat">STAT</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="medIndication">Clinical indication / problem</label>
+                            <input type="text" class="form-input" id="medIndication" name="medIndication" placeholder="e.g. Type 2 diabetes mellitus, hypertension">
+                        </div>
+                    </div>
+
+                    <p class="cpoe-legend">Drug product</p>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="medStrengthValue">Strength (per unit) *</label>
+                            <input type="text" class="form-input" id="medStrengthValue" name="medStrengthValue" required inputmode="decimal" placeholder="e.g. 500">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="medStrengthUnit">Strength unit *</label>
+                            <select class="form-input" id="medStrengthUnit" name="medStrengthUnit" required>
+                                <option value="mg">mg</option>
+                                <option value="mcg">mcg</option>
+                                <option value="g">g</option>
+                                <option value="mEq">mEq</option>
+                                <option value="units">Units (insulin)</option>
+                                <option value="IU">IU</option>
+                                <option value="%">%</option>
+                                <option value="mg/mL">mg/mL</option>
+                                <option value="other">Other (see pharmacy comments)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="medDoseForm">Dose form *</label>
+                            <select class="form-input" id="medDoseForm" name="medDoseForm" required>
+                                <option value="">Select form</option>
+                                <option value="tablet">Tablet</option>
+                                <option value="capsule">Capsule</option>
+                                <option value="oral_solution">Oral solution / suspension</option>
+                                <option value="injection">Injection (syringe)</option>
+                                <option value="iv_solution">IV solution / admixture</option>
+                                <option value="patch">Transdermal patch</option>
+                                <option value="inhaler">Inhaler</option>
+                                <option value="topical">Topical</option>
+                                <option value="suppository">Suppository</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <p class="cpoe-legend">Dose &amp; route</p>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="medDoseAmount">Dose per administration *</label>
+                            <input type="text" class="form-input" id="medDoseAmount" name="medDoseAmount" required placeholder="e.g. 1 tablet, 10 mL, 2 units">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="medRoute">Route *</label>
+                            <select class="form-input" id="medRoute" name="medRoute" required>
+                                <option value="">Select route</option>
+                                <option value="PO">PO (oral)</option>
+                                <option value="NG">NG / enteral tube</option>
+                                <option value="IV">IV push</option>
+                                <option value="IVPB">IV piggyback / intermittent</option>
+                                <option value="IM">IM</option>
+                                <option value="SC">Subcutaneous</option>
+                                <option value="SL">Sublingual</option>
+                                <option value="TOP">Topical</option>
+                                <option value="INH">Inhalation</option>
+                                <option value="OPH">Ophthalmic</option>
+                                <option value="OTH">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="medFrequency">Frequency *</label>
+                            <select class="form-input" id="medFrequency" name="medFrequency" required>
+                                <option value="">Select frequency</option>
+                                <option value="ONCE">Once only</option>
+                                <option value="DAILY">Daily</option>
+                                <option value="BID">BID</option>
+                                <option value="TID">TID</option>
+                                <option value="QID">QID</option>
+                                <option value="Q4H">Every 4 hours</option>
+                                <option value="Q6H">Every 6 hours</option>
+                                <option value="Q8H">Every 8 hours</option>
+                                <option value="Q12H">Every 12 hours</option>
+                                <option value="QHS">At bedtime</option>
+                                <option value="PRN">PRN</option>
+                                <option value="WKLY">Weekly</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="medPrnGroup" class="form-row cpoe-hidden">
+                        <div class="form-group" style="flex:1">
+                            <label class="form-label" for="medPrnReason">PRN reason / indication *</label>
+                            <textarea class="form-textarea" id="medPrnReason" name="medPrnReason" rows="2" placeholder="e.g. Mild pain 4–6/10, fever per unit protocol"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="medPrnMax">Max dose / 24h (optional)</label>
+                            <input type="text" class="form-input" id="medPrnMax" name="medPrnMax" placeholder="e.g. 4 doses / 24h">
+                        </div>
+                    </div>
+
+                    <div id="medIvGroup" class="form-row cpoe-hidden">
+                        <div class="form-group">
+                            <label class="form-label" for="medIvRate">Infusion rate *</label>
+                            <input type="text" class="form-input" id="medIvRate" name="medIvRate" placeholder="e.g. 100">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="medIvRateUnit">Rate unit *</label>
+                            <select class="form-input" id="medIvRateUnit" name="medIvRateUnit">
+                                <option value="mL/hr">mL/hr</option>
+                                <option value="gtt/min">gtt/min</option>
+                                <option value="mg/min">mg/min</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="medIvVolume">Total volume (mL)</label>
+                            <input type="text" class="form-input" id="medIvVolume" name="medIvVolume" placeholder="e.g. 500">
+                        </div>
+                    </div>
+
+                    <p class="cpoe-legend">Schedule &amp; prescriber</p>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="medStartDateTime">Start date &amp; time *</label>
+                            <input type="datetime-local" class="form-input" id="medStartDateTime" name="medStartDateTime" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="medStopDateTime">Stop date &amp; time (optional)</label>
+                            <input type="datetime-local" class="form-input" id="medStopDateTime" name="medStopDateTime">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="medDuration">Duration (optional)</label>
+                            <input type="text" class="form-input" id="medDuration" name="medDuration" placeholder="e.g. 7 days, 5 doses">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="medOrderingProvider">Ordering provider *</label>
+                            <input type="text" class="form-input" id="medOrderingProvider" name="medOrderingProvider" required placeholder="e.g. Dr. Michael Chen">
+                        </div>
+                    </div>
+
+                    <p class="cpoe-legend">Instructions</p>
+                    <div class="form-group">
+                        <label class="form-label" for="medSig">Patient directions (SIG) *</label>
+                        <textarea class="form-textarea" id="medSig" name="medSig" rows="3" required placeholder="Plain-language directions the patient sees on the label"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="medAdminInstructions">Administration instructions (optional)</label>
+                        <textarea class="form-textarea" id="medAdminInstructions" name="medAdminInstructions" rows="2" placeholder="e.g. Give with food, hold if hypotensive per protocol, taper per protocol"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="medPharmacyComments">Comments to pharmacy (optional)</label>
+                        <textarea class="form-textarea" id="medPharmacyComments" name="medPharmacyComments" rows="2" placeholder="Brand preference, renal dosing note, diluent, etc."></textarea>
+                    </div>
+
+                    <p class="cpoe-legend">Safety attestations</p>
+                    <div class="form-group cpoe-checkbox-row">
+                        <label class="form-checkbox-label">
+                            <input type="checkbox" id="medAckAllergies" name="medAckAllergies" class="form-checkbox">
+                            <span>I have reviewed the documented allergy / intolerance list for this patient *</span>
+                        </label>
+                    </div>
+                    <div class="form-group cpoe-checkbox-row">
+                        <label class="form-checkbox-label">
+                            <input type="checkbox" id="medAckDupe" name="medAckDupe" class="form-checkbox">
+                            <span>I have reviewed duplicate therapy / interaction screening (or documented override reason in notes) *</span>
+                        </label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" id="cancelMedication">Cancel</button>
+                <button type="button" class="btn-primary" id="saveMedication">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M20 6L9 17L4 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <span>Sign &amp; send order (demo)</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Record Vitals Modal -->
+    <div class="modal-overlay" id="recordVitalsModal">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h2 class="modal-title">Record Vital Signs</h2>
+                <button class="modal-close" id="closeVitalsModal">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="vitals-sync-buttons">
+                    <button class="btn-sync btn-sync-device" id="syncDeviceBtn">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="5" y="2" width="14" height="20" rx="2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M12 18H12.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <span>Sync from Device</span>
+                    </button>
+                    <button class="btn-sync btn-sync-ai" id="syncAiBtn">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M2 17L12 22L22 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M2 12L12 17L22 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <span>Sync from AI</span>
+                    </button>
+                </div>
+                
+                <form class="vitals-form" id="vitalsForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Blood Pressure (BP)</label>
+                            <div class="form-input-group">
+                                <input type="number" class="form-input" id="bpSystolic" placeholder="120" min="0" max="300">
+                                <span class="form-separator">/</span>
+                                <input type="number" class="form-input" id="bpDiastolic" placeholder="80" min="0" max="200">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Heart Rate (HR)</label>
+                            <div class="form-input-group">
+                                <input type="number" class="form-input" id="heartRate" placeholder="72" min="0" max="300">
+                                <span class="form-unit">bpm</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Temperature</label>
+                            <div class="form-input-group">
+                                <input type="number" class="form-input" id="temperature" placeholder="98.6" step="0.1" min="90" max="110">
+                                <span class="form-unit">°F</span>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">SpO₂ (Oxygen Saturation)</label>
+                            <div class="form-input-group">
+                                <input type="number" class="form-input" id="spo2" placeholder="98" min="0" max="100">
+                                <span class="form-unit">%</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Notes (Optional)</label>
+                        <textarea class="form-textarea" id="vitalsNotes" placeholder="Add any additional notes about the vital signs..." rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" id="cancelVitals">Cancel</button>
+                <button class="btn-primary" id="saveVitals">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M20 6L9 17L4 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <span>Save Vitals</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Surgery Modal -->
+    <div class="modal-overlay" id="addSurgeryModal">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h2 class="modal-title">Add Surgery</h2>
+                <button class="modal-close" id="closeSurgeryModal">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form class="surgery-form" id="surgeryForm">
+                    <div class="form-group">
+                        <label class="form-label">Surgery Name *</label>
+                        <input type="text" class="form-input" id="surgeryName" placeholder="e.g., Hip Replacement, Cataract Surgery, etc." required>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Surgery Date *</label>
+                            <input type="date" class="form-input" id="surgeryDate" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Surgery Type</label>
+                            <select class="form-input" id="surgeryType">
+                                <option value="elective">Elective</option>
+                                <option value="emergency">Emergency</option>
+                                <option value="urgent">Urgent</option>
+                                <option value="minor">Minor</option>
+                                <option value="major">Major</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Surgeon</label>
+                        <input type="text" class="form-input" id="surgeonName" placeholder="e.g., Dr. John Smith">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Hospital/Facility</label>
+                        <input type="text" class="form-input" id="surgeryFacility" placeholder="e.g., General Hospital">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Procedure Code (Optional)</label>
+                        <input type="text" class="form-input" id="procedureCode" placeholder="e.g., CPT code">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Notes (Optional)</label>
+                        <textarea class="form-textarea" id="surgeryNotes" placeholder="Add any additional notes about the surgery..." rows="4"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" id="cancelSurgery">Cancel</button>
+                <button class="btn-primary" id="saveSurgery">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M20 6L9 17L4 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <span>Save Surgery</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="nurse-data-service.js"></script>
+    <script src="nurse-shared.js"></script>
+    <script src="patient-detail.js"></script>
+</body>
+</html>
+
