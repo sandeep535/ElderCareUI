@@ -23,18 +23,22 @@ export const fetchLatestVitals = (id) => apiGet(`/patients/${id}/vitals/latest`)
 
 export const createPatient = (data) =>
   apiPost('/patients', {
-    firstName: data.firstName,
-    lastName:  data.lastName,
-    dob:       data.dob,
-    gender:    data.gender,
+    firstName:     data.firstName,
+    lastName:      data.lastName,
+    dob:           data.dob,
+    gender:        data.gender,
+    enquireFromId: data.enquireFromId ?? null,
+    consentForm:   data.consentForm  ?? false,
   })
 
 export const updatePatientBasic = (id, data) =>
   apiPut(`/patients/${id}`, {
-    firstName: data.firstName,
-    lastName:  data.lastName,
-    dob:       data.dob,
-    gender:    data.gender,
+    firstName:     data.firstName,
+    lastName:      data.lastName,
+    dob:           data.dob,
+    gender:        data.gender,
+    enquireFromId: data.enquireFromId ?? null,
+    consentForm:   data.consentForm  ?? false,
   })
 
 export const updatePatient = (id, data) => apiPut(`/patients/${id}`, data)
@@ -61,7 +65,7 @@ export const createNok = (patientId, nokList) => apiPost(`/patients/${patientId}
 export const updateNok = (patientId, nokList) => apiPut(`/patients/${patientId}/nok`, buildNokPayload(nokList))
 
 // Masters
-export const fetchMasterData = (type) => apiGet(`/${type}`)
+export const fetchMasterData = (type) => apiGet(`/masters/${type}`)
 export const fetchUsers = () => apiGet('/users')
 
 // Medical

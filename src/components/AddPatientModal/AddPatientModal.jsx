@@ -14,6 +14,8 @@ const schema = yup.object({
   dob:              yup.string().required('Date of birth is required'),
   gender:           yup.string().required('Gender is required'),
   patientId:        yup.string(),
+  enquireFromId:    yup.number().nullable(),
+  consentForm:      yup.boolean(),
   physician:        yup.string(),
   nurse:            yup.string(),
   allergies:        yup.string(),
@@ -63,10 +65,11 @@ export default function AddPatientModal({ onClose, onSave, loading = false, pati
   const [patientStatuses, setPatientStatuses] = useState([])
   const [doctors,       setDoctors]         = useState([])
   const [nurses,        setNurses]          = useState([])
+  const [enquireFromList, setEnquireFromList] = useState([])
 
   const { register, handleSubmit, control, trigger, getValues, reset, formState: { errors } } = useForm({
     resolver: yupResolver(schema),
-    defaultValues: { status: 'stable', nok: [] },
+    defaultValues: { status: 'stable', nok: [], consentForm: false, enquireFromId: null },
   })
 
   const { fields, append, remove } = useFieldArray({ control, name: 'nok' })
@@ -121,6 +124,10 @@ export default function AddPatientModal({ onClose, onSave, loading = false, pati
     fetchMasterData('PATIENT_STATUS')
       .then(res => setPatientStatuses(dedup(Array.isArray(res) ? res : (res?.data || []))))
       .catch(() => setPatientStatuses([]))
+
+    fetchMasterData('ENQUIRE_FROM')
+      .then(res => setEnquireFromList(Array.isArray(res) ? res : (res?.data || [])))
+      .catch(() => setEnquireFromList([]))
   }, [])
 
   // if editing existing patient — fetch patient + NOK in parallel and pre-fill form
@@ -156,6 +163,8 @@ export default function AddPatientModal({ onClose, onSave, loading = false, pati
           dob:              data.dob       || '',
           gender:           data.gender    || '',
           patientId:        data.patientId || '',
+          enquireFromId:    data.enquireFromId || null,
+          consentForm:      data.consentForm   || false,
           physician:        medical?.primaryPhysicianName || '',
           nurse:            medical?.nurseName            || '',
           allergies:        medical?.allergies            || '',
@@ -200,10 +209,12 @@ export default function AddPatientModal({ onClose, onSave, loading = false, pati
     try {
       const values = getValues()
       const basicPayload = {
-        firstName: values.firstName,
-        lastName:  values.lastName,
-        dob:       values.dob,
-        gender:    values.gender,
+        firstName:     values.firstName,
+        lastName:      values.lastName,
+        dob:           values.dob,
+        gender:        values.gender,
+        enquireFromId: values.enquireFromId ? Number(values.enquireFromId) : null,
+        consentForm:   values.consentForm || false,
       }
 
       let patient = createdPatient
@@ -399,6 +410,27 @@ export default function AddPatientModal({ onClose, onSave, loading = false, pati
                   <div className="form-group">
                     <label className="form-label">Patient ID</label>
                     <input type="text" className="form-input" placeholder="Auto-generated if left empty" {...register('patientId')} />
+                  </div>
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label className="form-label">Enquiry From</label>
+                      <select className="form-input" {...register('enquireFromId')}>
+                        <option value="">Select enquiry source</option>
+                        {enquireFromList.map(e => (
+                          <option key={e.id} value={e.id}>{e.lookupItem}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="form-group" style={{ justifyContent: 'flex-end', paddingTop: '1.75rem' }}>
+                      <label className="form-checkbox-label" style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', fontWeight: 500, fontSize: '0.9375rem', color: 'var(--color-navy)' }}>
+                        <input
+                          type="checkbox"
+                          style={{ width: 18, height: 18, accentColor: 'var(--color-primary)', cursor: 'pointer' }}
+                          {...register('consentForm')}
+                        />
+                        Consent Form Obtained
+                      </label>
+                    </div>
                   </div>
                 </div>
 
