@@ -1,4 +1,5 @@
 import { apiGet, apiPost, apiPut, apiDelete } from './apiService'
+import axiosInstance from './axiosInstance'
 import { MOCK_STATS, MOCK_ALERTS } from '../constants/mockData'
 
 const USE_MOCK = true
@@ -114,6 +115,18 @@ export const fetchActiveCheckin = (patientId) => apiGet(`/patients/${patientId}/
 export const fetchCheckinHistory = (patientId, from, to) => apiGet(`/patients/${patientId}/checkin/history`, { from, to })
 export const checkInPatient = (patientId) => apiPost(`/patients/${patientId}/checkin`, {})
 export const checkOutPatient = (patientId, checkinId) => apiPut(`/patients/${patientId}/checkin/${checkinId}/checkout`, {})
+
+// Patient Photo
+export const fetchPatientPhoto = (patientId) =>
+  axiosInstance.get(`/patients/${patientId}/photo`, { responseType: 'blob' })
+
+export const uploadPatientPhoto = (patientId, file) => {
+  const formData = new FormData()
+  formData.append('file', file)
+  return axiosInstance.post(`/patients/${patientId}/photo`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  })
+}
 
 // Alerts
 export const fetchUnresolvedAlerts = (patientId) => apiGet(`/patients/${patientId}/alerts/unresolved`)

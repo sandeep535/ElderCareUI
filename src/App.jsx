@@ -6,6 +6,7 @@ import NurseDashboard from './pages/NurseDashboard/NurseDashboard'
 import PatientDetail from './pages/PatientDetail/PatientDetail'
 import TaskMaster from './pages/TaskMaster/TaskMaster'
 import TaskGroup from './pages/TaskGroup/TaskGroup'
+import Alerts from './pages/Alerts/Alerts'
 import './styles/theme.css'
 
 export default function App() {
@@ -23,6 +24,7 @@ export default function App() {
             <Route path="/patient/:id"     element={<PatientDetail />} />
             <Route path="/task-master"     element={<TaskMaster />} />
             <Route path="/task-groups"     element={<TaskGroup />} />
+            <Route path="/alerts"          element={<Alerts />} />
           </Route>
         </Routes>
       </BrowserRouter>

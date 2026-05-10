@@ -17,7 +17,7 @@ const NAV_ITEMS = [
     icon: <svg viewBox="0 0 24 24" fill="none"><path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M2 17L12 22L22 17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M2 12L12 17L22 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>,
   },
   {
-    label: 'Alerts', path: '#', key: 'alerts', badge: 3,
+    label: 'Alerts', path: '/alerts', key: 'alerts', badge: 3,
     icon: <svg viewBox="0 0 24 24" fill="none"><path d="M18 8A6 6 0 0 0 6 8C6 11.3137 9 12 9 12C9 12 12 11.3137 12 8Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M9 12L9 16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M15 12L15 16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M9 16C9 17.6569 10.3431 19 12 19C13.6569 19 15 17.6569 15 16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>,
   },
   {
@@ -45,6 +45,7 @@ const PATH_TO_KEY = {
   '/patient':                       'patients',
   '/task-master':                   'task-master',
   '/task-groups':                   'task-groups',
+  '/alerts':                        'alerts',
 }
 
 export default function Sidebar() {

@@ -17,6 +17,7 @@ import {
   createVital, createNote, createDiagnosis, createSurgery, createMedication,
   fetchUnresolvedAlerts, fetchTasksRange, createTasks, updateTask,
   fetchActiveCheckin, checkInPatient, checkOutPatient, fetchCheckinHistory,
+  fetchPatientPhoto, uploadPatientPhoto,
 } from '../../api/endpoints'
 import './PatientDetail.css'
 import '../../components/UI/UI.css'
@@ -169,6 +170,90 @@ export default function PatientDetail() {
   const [patientInfo,   setPatientInfo]  = useState(null)
   const [bannerLoading, setBannerLoading] = useState(true)
   const [bannerError,   setBannerError]  = useState(null)
+
+  // Patient photo
+  const [photoUrl,       setPhotoUrl]       = useState(null)
+  const [photoUploading, setPhotoUploading] = useState(false)
+  const [showCamera,     setShowCamera]     = useState(false)
+  const photoInputRef = useRef(null)
+  const videoRef      = useRef(null)
+  const streamRef     = useRef(null)
+
+  useEffect(() => {
+    if (!id) return
+    fetchPatientPhoto(id)
+      .then(res => {
+        // axiosInstance with responseType:'blob' returns the blob directly
+        // (our interceptor returns response.data, so res is the Blob)
+        const blob = res instanceof Blob ? res : res?.data
+        if (blob && blob.size > 0) {
+          setPhotoUrl(URL.createObjectURL(blob))
+        }
+      })
+      .catch(() => {}) // no photo yet — show initials
+  }, [id])
+
+  const handlePhotoUpload = async (file) => {
+    if (!file) return
+    setPhotoUploading(true)
+    try {
+      await uploadPatientPhoto(id, file)
+      // Show the uploaded file immediately as a local preview
+      setPhotoUrl(URL.createObjectURL(file))
+    } catch {
+      // silently fail — keep existing photo/initials
+    } finally {
+      setPhotoUploading(false)
+    }
+  }
+
+  const openCamera = () => {
+    setShowCamera(true)
+  }
+
+  // Start camera stream once the video element is mounted
+  useEffect(() => {
+    if (!showCamera) return
+    let active = true
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } })
+      .then(stream => {
+        if (!active) { stream.getTracks().forEach(t => t.stop()); return }
+        streamRef.current = stream
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream
+          videoRef.current.play()
+        }
+      })
+      .catch(() => {
+        setShowCamera(false)
+        alert('Camera access denied or not available.')
+      })
+    return () => {
+      active = false
+      streamRef.current?.getTracks().forEach(t => t.stop())
+      streamRef.current = null
+    }
+  }, [showCamera])
+
+  const closeCamera = () => {
+    streamRef.current?.getTracks().forEach(t => t.stop())
+    streamRef.current = null
+    setShowCamera(false)
+  }
+
+  const capturePhoto = () => {
+    const video = videoRef.current
+    if (!video) return
+    const canvas = document.createElement('canvas')
+    canvas.width  = video.videoWidth
+    canvas.height = video.videoHeight
+    canvas.getContext('2d').drawImage(video, 0, 0)
+    canvas.toBlob(async (blob) => {
+      closeCamera()
+      const file = new File([blob], 'photo.jpg', { type: 'image/jpeg' })
+      await handlePhotoUpload(file)
+    }, 'image/jpeg', 0.92)
+  }
 
   // Check-in / Check-out
   const [checkin,         setCheckin]         = useState(null)   // active checkin record or null
@@ -348,8 +433,8 @@ export default function PatientDetail() {
   const handleSaveTask = async (data) => {
     const saved = await saveTask(data)
     if (saved) {
-      setTaskData(prev => [saved, ...(prev || [])])
       setShowTaskModal(false)
+      loadTasks(id, taskFrom, taskTo)
     }
     return saved
   }
@@ -399,127 +484,213 @@ export default function PatientDetail() {
       {/* Patient Banner */}
       {bannerLoading ? <PatientBannerSkeleton /> : bannerError ? <ErrorState message={bannerError} /> : patientInfo && (
         <section className="patient-banner">
-          <div className="banner-content">
-            <div className="banner-left">
+          <div className="banner-grid">
 
-              {/* Left column: avatar + demographics stacked */}
-              <div className="banner-left-column">
-                <div className="patient-avatar-large">
+            {/* Row 1, Col 1-4: Avatar */}
+            <div className="banner-cell banner-cell--avatar">
+              <div className="patient-avatar-large">
+                {photoUrl ? (
+                  <img src={photoUrl} alt={patientInfo.name} className="patient-avatar-image" />
+                ) : (
                   <div className="patient-avatar-placeholder">
                     {patientInfo.firstName?.[0]}{patientInfo.lastName?.[0]}
                   </div>
-                </div>
-                <div className="banner-section">
-                  <h4 className="banner-section-title">Demographics</h4>
-                  {[['Gender', patientInfo.gender], ['DOB', patientInfo.dob], ['Blood Type', patientInfo.bloodType], ['Admission', patientInfo.admissionDate]].map(([l, v]) => (
-                    <div key={l} className="banner-detail-row">
-                      <span className="banner-detail-label">{l}</span>
-                      <span className="banner-detail-value">{v || '--'}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
+                )}
 
-              {/* Main info: name/meta + sections grid */}
-              <div className="patient-info-main">
-                <h2 className="patient-name-large">{patientInfo.name}</h2>
-                <div className="patient-meta">
-                  <span className="patient-id-badge">ID: {patientInfo.patientId}</span>
-                  <StatusBadge status={patientInfo.completionStatus === 'INCOMPLETE' ? 'warning' : 'stable'} />
-                </div>
-
-                <div className="banner-sections-grid">
-                  <div className="banner-section">
-                    <h4 className="banner-section-title">Care Team</h4>
-                    {[['Primary Physician', patientInfo.physician], ['Attending Nurse', patientInfo.nurse], ['Room / Bed', `${patientInfo.room} / ${patientInfo.bed}`]].map(([l, v]) => (
-                      <div key={l} className="banner-detail-row">
-                        <span className="banner-detail-label">{l}</span>
-                        <span className="banner-detail-value">{v || '--'}</span>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="banner-section">
-                    <h4 className="banner-section-title">Medical Alerts</h4>
-                    {alerts.length === 0 && <span style={{ fontSize: '0.8125rem', color: 'var(--color-gray)' }}>No active alerts</span>}
-                    {alerts.slice(0, 1).map(a => (
-                      <div key={a.id} className={`banner-alert-item ${a.priority === 'HIGH' ? 'alert-warning' : 'alert-info'}`}>
-                        <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2"/><path d="M12 16V12M12 8H12.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <span style={{ fontWeight: 600, display: 'block' }}>{a.name}: {a.value}</span>
-                          <span style={{ fontSize: '0.75rem', opacity: 0.85 }}>{a.reason}</span>
-                        </div>
-                      </div>
-                    ))}
-                    {alerts.length > 1 && (
-                      <button onClick={() => setShowAllAlerts(true)} style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--color-primary)', background: 'none', border: 'none', cursor: 'pointer', padding: '2px 0', textAlign: 'left' }}>
-                        +{alerts.length - 1} more alert{alerts.length - 1 > 1 ? 's' : ''}
+                {/* Upload overlay */}
+                <div className="avatar-upload-overlay">
+                  {photoUploading ? (
+                    <span className="btn-spinner" style={{ width: 22, height: 22, borderTopColor: '#fff', borderColor: 'rgba(255,255,255,0.3)', borderWidth: 3 }} />
+                  ) : (
+                    <>
+                      {/* Upload from gallery */}
+                      <button
+                        className="avatar-upload-btn"
+                        title="Upload photo"
+                        onClick={() => photoInputRef.current?.click()}
+                      >
+                        <svg viewBox="0 0 24 24" fill="none" style={{ width: 18, height: 18 }}>
+                          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                          <polyline points="17 8 12 3 7 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                          <line x1="12" y1="3" x2="12" y2="15" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
                       </button>
-                    )}
-                    <div className="banner-detail-row"><span className="banner-detail-label">Medications</span><span className="banner-detail-value">{medications?.length ?? '--'}</span></div>
-                    <div className="banner-detail-row"><span className="banner-detail-label">Diagnoses</span><span className="banner-detail-value">{diagnoses?.length ?? '--'}</span></div>
-                    <div className="banner-detail-row"><span className="banner-detail-label">NOK</span><span className="banner-detail-value">{patientInfo.nok?.length ?? '--'}</span></div>
-                  </div>
-
-                  {/* Visit Tracking — 3rd card in the sections grid */}
-                  <div className="banner-section visit-tracking-card">
-                    <div className="visit-tracking-header">
-                      <svg viewBox="0 0 24 24" fill="none" style={{ width: 13, height: 13 }}>
-                        <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2"/>
-                        <path d="M12 6v6l4 2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
-                      <span>Visit Tracking</span>
-                    </div>
-                    {checkinError && <p style={{ fontSize: '0.7rem', color: '#EF4444', margin: '2px 0 0' }}>{checkinError}</p>}
-                    {!checkin && (
-                      <div className="visit-tracking-body">
-                        <span className="visit-tracking-empty">No active visit</span>
-                        <button className="visit-tracking-btn visit-tracking-btn--in" onClick={handleCheckIn} disabled={checkinLoading}>
-                          {checkinLoading ? '...' : 'Check In'}
-                        </button>
-                      </div>
-                    )}
-                    {checkin && !checkin.checkOutTime && (
-                      <div className="visit-tracking-body">
-                        <div className="visit-tracking-info">
-                          <span className="visit-tracking-label">Check-in</span>
-                          <span className="visit-tracking-value visit-tracking-value--green">{formatDateTimeDisplay(new Date(checkin.checkInTime))}</span>
-                        </div>
-                        <div className="visit-tracking-info">
-                          <span className="visit-tracking-label">Duration</span>
-                          <span className="visit-tracking-value visit-tracking-value--primary">{liveDuration}</span>
-                        </div>
-                        <button className="visit-tracking-btn visit-tracking-btn--out" onClick={handleCheckOut} disabled={checkinLoading}>
-                          {checkinLoading ? '...' : 'Check Out'}
-                        </button>
-                      </div>
-                    )}
-                    {checkin && checkin.checkOutTime && (
-                      <div className="visit-tracking-body">
-                        <div className="visit-tracking-info">
-                          <span className="visit-tracking-label">In</span>
-                          <span className="visit-tracking-value">{formatDateTimeDisplay(new Date(checkin.checkInTime))}</span>
-                        </div>
-                        <div className="visit-tracking-info">
-                          <span className="visit-tracking-label">Out</span>
-                          <span className="visit-tracking-value">{formatDateTimeDisplay(new Date(checkin.checkOutTime))}</span>
-                        </div>
-                        <div className="visit-tracking-info">
-                          <span className="visit-tracking-label">Duration</span>
-                          <span className="visit-tracking-value" style={{ fontWeight: 700 }}>{calcDuration(checkin.checkInTime, checkin.checkOutTime)}</span>
-                        </div>
-                        <button className="visit-tracking-btn visit-tracking-btn--in" onClick={handleCheckIn} disabled={checkinLoading}>
-                          {checkinLoading ? '...' : 'New Check In'}
-                        </button>
-                      </div>
-                    )}
-                  </div>
+                      {/* Camera capture */}
+                      <button
+                        className="avatar-upload-btn"
+                        title="Take photo"
+                        onClick={openCamera}
+                      >
+                        <svg viewBox="0 0 24 24" fill="none" style={{ width: 18, height: 18 }}>
+                          <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                          <circle cx="12" cy="13" r="4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                      </button>
+                    </>
+                  )}
                 </div>
+
+                {/* Hidden file input for gallery upload */}
+                <input
+                  ref={photoInputRef}
+                  type="file"
+                  accept="image/*"
+                  style={{ display: 'none' }}
+                  onChange={(e) => handlePhotoUpload(e.target.files?.[0])}
+                />
               </div>
             </div>
 
-            {/* Right: Vitals */}
-            <div className="banner-right">
+            {/* Webcam modal */}
+            {showCamera && (
+              <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && closeCamera()}>
+                <div className="modal-container" style={{ maxWidth: 480 }}>
+                  <div className="modal-header">
+                    <h2 className="modal-title">Take Photo</h2>
+                    <button className="modal-close" onClick={closeCamera}>
+                      <svg viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                    </button>
+                  </div>
+                  <div className="modal-body" style={{ padding: 0 }}>
+                    <video
+                      ref={videoRef}
+                      autoPlay
+                      playsInline
+                      style={{ width: '100%', display: 'block', borderRadius: '0 0 4px 4px' }}
+                    />
+                  </div>
+                  <div className="modal-footer">
+                    <button className="btn-secondary" onClick={closeCamera}>Cancel</button>
+                    <button className="btn-primary" onClick={capturePhoto}>
+                      <svg viewBox="0 0 24 24" fill="none" style={{ width: 16, height: 16 }}>
+                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        <circle cx="12" cy="13" r="4" stroke="currentColor" strokeWidth="2"/>
+                      </svg>
+                      Capture
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Row 1, Col 5-8: Name + ID + Status */}
+            <div className="banner-cell banner-cell--identity">
+              <h2 className="patient-name-large">{patientInfo.name}</h2>
+              <div className="patient-meta">
+                <span className="patient-id-badge">ID: {patientInfo.patientId}</span>
+                <StatusBadge status={patientInfo.completionStatus === 'INCOMPLETE' ? 'warning' : 'stable'} />
+              </div>
+            </div>
+
+            {/* Row 1, Col 9-12: Visit Tracking */}
+            <div className="banner-cell banner-cell--tracker">
+              <div className="visit-tracking-card">
+                <div className="visit-tracking-header">
+                  <svg viewBox="0 0 24 24" fill="none" style={{ width: 13, height: 13 }}>
+                    <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2"/>
+                    <path d="M12 6v6l4 2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                  <span>Visit Tracking</span>
+                </div>
+                {checkinError && <p style={{ fontSize: '0.7rem', color: '#EF4444', margin: '2px 0 0' }}>{checkinError}</p>}
+                {!checkin && (
+                  <div className="visit-tracking-body">
+                    <span className="visit-tracking-empty">No active visit</span>
+                    <button className="visit-tracking-btn visit-tracking-btn--in" onClick={handleCheckIn} disabled={checkinLoading}>
+                      {checkinLoading ? '...' : 'Check In'}
+                    </button>
+                  </div>
+                )}
+                {checkin && !checkin.checkOutTime && (
+                  <div className="visit-tracking-body">
+                    <div className="visit-tracking-info">
+                      <span className="visit-tracking-label">Check-in</span>
+                      <span className="visit-tracking-value visit-tracking-value--green">{formatDateTimeDisplay(new Date(checkin.checkInTime))}</span>
+                    </div>
+                    <div className="visit-tracking-info">
+                      <span className="visit-tracking-label">Duration</span>
+                      <span className="visit-tracking-value visit-tracking-value--primary">{liveDuration}</span>
+                    </div>
+                    <button className="visit-tracking-btn visit-tracking-btn--out" onClick={handleCheckOut} disabled={checkinLoading}>
+                      {checkinLoading ? '...' : 'Check Out'}
+                    </button>
+                  </div>
+                )}
+                {checkin && checkin.checkOutTime && (
+                  <div className="visit-tracking-body">
+                    <div className="visit-tracking-info">
+                      <span className="visit-tracking-label">In</span>
+                      <span className="visit-tracking-value">{formatDateTimeDisplay(new Date(checkin.checkInTime))}</span>
+                    </div>
+                    <div className="visit-tracking-info">
+                      <span className="visit-tracking-label">Out</span>
+                      <span className="visit-tracking-value">{formatDateTimeDisplay(new Date(checkin.checkOutTime))}</span>
+                    </div>
+                    <div className="visit-tracking-info">
+                      <span className="visit-tracking-label">Duration</span>
+                      <span className="visit-tracking-value" style={{ fontWeight: 700 }}>{calcDuration(checkin.checkInTime, checkin.checkOutTime)}</span>
+                    </div>
+                    <button className="visit-tracking-btn visit-tracking-btn--in" onClick={handleCheckIn} disabled={checkinLoading}>
+                      {checkinLoading ? '...' : 'New Check In'}
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Row 2, Col 1-3: Demographics */}
+            <div className="banner-cell banner-cell--demographics">
+              <div className="banner-section">
+                <h4 className="banner-section-title">Demographics</h4>
+                {[['Gender', patientInfo.gender], ['DOB', patientInfo.dob], ['Blood Type', patientInfo.bloodType], ['Admission', patientInfo.admissionDate]].map(([l, v]) => (
+                  <div key={l} className="banner-detail-row">
+                    <span className="banner-detail-label">{l}</span>
+                    <span className="banner-detail-value">{v || '--'}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Row 2, Col 4-6: Care Team */}
+            <div className="banner-cell banner-cell--careteam">
+              <div className="banner-section">
+                <h4 className="banner-section-title">Care Team</h4>
+                {[['Primary Physician', patientInfo.physician], ['Attending Nurse', patientInfo.nurse], ['Room / Bed', `${patientInfo.room} / ${patientInfo.bed}`]].map(([l, v]) => (
+                  <div key={l} className="banner-detail-row">
+                    <span className="banner-detail-label">{l}</span>
+                    <span className="banner-detail-value">{v || '--'}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Row 2, Col 7-9: Medical Alerts */}
+            <div className="banner-cell banner-cell--alerts">
+              <div className="banner-section">
+                <h4 className="banner-section-title">Medical Alerts</h4>
+                {alerts.length === 0 && <span style={{ fontSize: '0.8125rem', color: 'var(--color-gray)' }}>No active alerts</span>}
+                {alerts.slice(0, 1).map(a => (
+                  <div key={a.id} className={`banner-alert-item ${a.priority === 'HIGH' ? 'alert-warning' : 'alert-info'}`}>
+                    <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2"/><path d="M12 16V12M12 8H12.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <span style={{ fontWeight: 600, display: 'block' }}>{a.name}: {a.value}</span>
+                      <span style={{ fontSize: '0.75rem', opacity: 0.85 }}>{a.reason}</span>
+                    </div>
+                  </div>
+                ))}
+                {alerts.length > 1 && (
+                  <button onClick={() => setShowAllAlerts(true)} style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--color-primary)', background: 'none', border: 'none', cursor: 'pointer', padding: '2px 0', textAlign: 'left' }}>
+                    +{alerts.length - 1} more alert{alerts.length - 1 > 1 ? 's' : ''}
+                  </button>
+                )}
+                <div className="banner-detail-row"><span className="banner-detail-label">Medications</span><span className="banner-detail-value">{medications?.length ?? '--'}</span></div>
+                <div className="banner-detail-row"><span className="banner-detail-label">Diagnoses</span><span className="banner-detail-value">{diagnoses?.length ?? '--'}</span></div>
+                <div className="banner-detail-row"><span className="banner-detail-label">NOK</span><span className="banner-detail-value">{patientInfo.nok?.length ?? '--'}</span></div>
+              </div>
+            </div>
+
+            {/* Row 2, Col 10-12: Current Vitals */}
+            <div className="banner-cell banner-cell--vitals">
               <div className="vital-signs-summary">
                 <h3 className="vitals-title">Current Vitals</h3>
                 <div className="vitals-grid">
@@ -536,6 +707,7 @@ export default function PatientDetail() {
                 </div>
               </div>
             </div>
+
           </div>
         </section>
       )}
