@@ -66,21 +66,29 @@ const getRelativeTime = (timestamp) => {
 // Map API vital response to display shape
 const normalizeVital = (v) => {
   const recordedDate = v.recordedAt ? new Date(v.recordedAt) : null
+  const bp = (v.systolic != null && v.diastolic != null) ? `${v.systolic}/${v.diastolic}` : '--'
+  const hr = v.bpHeartRate ?? v.hr
+  const temp = v.temperature ?? v.temp
   return {
     id:          v.id,
-    bp:          `${v.systolic}/${v.diastolic}`,
-    hr:          `${v.hr} bpm`,
-    temp:        `${v.temp}°F`,
-    spo2:        `${v.spo2}%`,
+    bp,
+    hr:          hr != null ? `${hr} bpm` : '--',
+    temp:        temp != null ? `${temp}°F` : '--',
+    spo2:        v.spo2 != null ? `${v.spo2}%` : '--',
     rawSystolic: v.systolic,
-    rawHr:       v.hr,
-    rawTemp:     v.temp,
+    rawHr:       hr,
+    rawTemp:     temp,
     rawSpo2:     v.spo2,
+    // body composition extras
+    weight:      v.weight,
+    height:      v.height,
+    bmi:         v.bmi,
     notes:       v.notes || '',
     hasAlert:    v.hasAlert,
     datetime:    formatDateTimeDisplay(recordedDate),
     relativeTime: getRelativeTime(v.recordedAt),
     by:          'Nurse',
+    _raw:        v,
   }
 }
 
@@ -134,6 +142,7 @@ export default function PatientDetail() {
   const [viewSurgery,    setViewSurgery]    = useState(null)
   const [showMedication, setShowMedication] = useState(false)
   const [viewMedication, setViewMedication] = useState(null)
+  const [viewVital,     setViewVital]     = useState(null)
   const [showTaskModal, setShowTaskModal] = useState(false)
   const [editingTaskId, setEditingTaskId] = useState(null)
   const [editingStatus, setEditingStatus] = useState('')
@@ -405,7 +414,7 @@ export default function PatientDetail() {
   // normalize + sort vitals by createdOn desc (latest first)
   const vitals = rawVitals
     ? [...rawVitals]
-        .sort((a, b) => new Date(b.createdOn) - new Date(a.createdOn))
+        .sort((a, b) => new Date(b.recordedAt || b.createdOn) - new Date(a.recordedAt || a.createdOn))
         .map(normalizeVital)
     : null
 
@@ -788,6 +797,7 @@ export default function PatientDetail() {
                         <th>SpO₂</th>
                         <th>Alert</th>
                         <th>Notes</th>
+                        <th>Action</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -805,6 +815,12 @@ export default function PatientDetail() {
                             }
                           </td>
                           <td>{v.notes || '--'}</td>
+                          <td>
+                            <button className="btn-view-sm" onClick={() => setViewVital(v)}>
+                              <svg viewBox="0 0 24 24" fill="none"><path d="M1 12C1 12 5 4 12 4s11 8 11 8-4 8-11 8S1 12 1 12z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="2"/></svg>
+                              View
+                            </button>
+                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -1146,7 +1162,67 @@ export default function PatientDetail() {
         )}
       </div>
 
-      {showVitals    && <RecordVitalsModal onClose={() => setShowVitals(false)}    onSave={handleSaveVitals} />}
+      {showVitals && <RecordVitalsModal onClose={() => setShowVitals(false)} onSave={handleSaveVitals} />}
+      {viewVital && (
+        <div className="modal-overlay" onClick={e => e.target === e.currentTarget && setViewVital(null)}>
+          <div className="modal-container modal-large">
+            <div className="modal-header">
+              <h2 className="modal-title">Vital Signs — {viewVital.datetime}</h2>
+              <button className="modal-close" onClick={() => setViewVital(null)}>
+                <svg viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              </button>
+            </div>
+            <div className="modal-body">
+              {/* Clinical Vitals */}
+              {[['Systolic BP', viewVital._raw.systolic, 'mmHg'], ['Diastolic BP', viewVital._raw.diastolic, 'mmHg'], ['Heart Rate (BP)', viewVital._raw.bpHeartRate, 'bpm'], ['SpO₂', viewVital._raw.spo2, '%'], ['SpO₂ Heart Rate', viewVital._raw.spo2HeartRate, 'bpm'], ['Temperature', viewVital._raw.temperature, '°F']].some(([,v]) => v != null) && (
+                <>
+                  <p style={{ fontWeight: 700, color: 'var(--color-navy)', marginBottom: 8, fontSize: '0.875rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Clinical Vitals</p>
+                  <div className="form-row form-row-2" style={{ marginBottom: 16 }}>
+                    {[['Systolic BP', viewVital._raw.systolic, 'mmHg'], ['Diastolic BP', viewVital._raw.diastolic, 'mmHg'], ['Heart Rate (BP)', viewVital._raw.bpHeartRate, 'bpm'], ['SpO₂', viewVital._raw.spo2, '%'], ['SpO₂ Heart Rate', viewVital._raw.spo2HeartRate, 'bpm'], ['Temperature', viewVital._raw.temperature, '°F']]
+                      .filter(([,v]) => v != null)
+                      .map(([label, val, unit]) => (
+                        <div key={label} style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                          <span style={{ fontSize: '0.75rem', color: 'var(--color-gray)', fontWeight: 500 }}>{label}</span>
+                          <span style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--color-navy)' }}>{val} <span style={{ fontSize: '0.8rem', fontWeight: 400 }}>{unit}</span></span>
+                        </div>
+                      ))}
+                  </div>
+                </>
+              )}
+              {/* Body Composition */}
+              {[['Height', viewVital._raw.height, 'cm'], ['Weight', viewVital._raw.weight, 'kg'], ['BMI', viewVital._raw.bmi, ''], ['Body Fat %', viewVital._raw.bodyFatPercentage, '%'], ['Body Fat Mass', viewVital._raw.bodyFatMass, 'kg'], ['Skeletal Muscle %', viewVital._raw.skeletalMusclePercentage, '%'], ['Body Water %', viewVital._raw.bodyWaterPercentage, '%'], ['Total Moisture', viewVital._raw.totalMoisture, 'kg'], ['Extracellular Water %', viewVital._raw.extracellularWaterPct, '%'], ['Intracellular Water %', viewVital._raw.intracellularWaterPct, '%'], ['Basal Metabolism', viewVital._raw.basalMetabolism, 'kcal'], ['Visceral Fat Level', viewVital._raw.visceralFatLevel, ''], ['Protein', viewVital._raw.protein, 'kg'], ['Mineral', viewVital._raw.mineral, 'kg'], ['Body Age', viewVital._raw.bodyAge, 'yrs'], ['Overall Score', viewVital._raw.overall, '']].some(([,v]) => v != null) && (
+                <>
+                  <p style={{ fontWeight: 700, color: 'var(--color-navy)', marginBottom: 8, fontSize: '0.875rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Body Composition</p>
+                  <div className="form-row form-row-2" style={{ marginBottom: 16 }}>
+                    {[['Height', viewVital._raw.height, 'cm'], ['Weight', viewVital._raw.weight, 'kg'], ['BMI', viewVital._raw.bmi, ''], ['Body Fat %', viewVital._raw.bodyFatPercentage, '%'], ['Body Fat Mass', viewVital._raw.bodyFatMass, 'kg'], ['Skeletal Muscle %', viewVital._raw.skeletalMusclePercentage, '%'], ['Body Water %', viewVital._raw.bodyWaterPercentage, '%'], ['Total Moisture', viewVital._raw.totalMoisture, 'kg'], ['Extracellular Water %', viewVital._raw.extracellularWaterPct, '%'], ['Intracellular Water %', viewVital._raw.intracellularWaterPct, '%'], ['Basal Metabolism', viewVital._raw.basalMetabolism, 'kcal'], ['Visceral Fat Level', viewVital._raw.visceralFatLevel, ''], ['Protein', viewVital._raw.protein, 'kg'], ['Mineral', viewVital._raw.mineral, 'kg'], ['Body Age', viewVital._raw.bodyAge, 'yrs'], ['Overall Score', viewVital._raw.overall, '']]
+                      .filter(([,v]) => v != null)
+                      .map(([label, val, unit]) => (
+                        <div key={label} style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                          <span style={{ fontSize: '0.75rem', color: 'var(--color-gray)', fontWeight: 500 }}>{label}</span>
+                          <span style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--color-navy)' }}>{val}{unit && <span style={{ fontSize: '0.8rem', fontWeight: 400 }}> {unit}</span>}</span>
+                        </div>
+                      ))}
+                  </div>
+                </>
+              )}
+              {viewVital.notes && (
+                <>
+                  <p style={{ fontWeight: 700, color: 'var(--color-navy)', marginBottom: 4, fontSize: '0.875rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Notes</p>
+                  <p style={{ fontSize: '0.9rem', color: 'var(--color-text)' }}>{viewVital.notes}</p>
+                </>
+              )}
+              {viewVital.hasAlert && (
+                <div style={{ marginTop: 12, padding: '8px 12px', background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: 6, color: '#B91C1C', fontSize: '0.875rem', fontWeight: 600 }}>
+                  ⚠ This record has an active alert
+                </div>
+              )}
+            </div>
+            <div className="modal-footer">
+              <button className="btn-secondary" onClick={() => setViewVital(null)}>Close</button>
+            </div>
+          </div>
+        </div>
+      )}
       {showNote      && <ClinicalNoteModal onClose={() => setShowNote(false)}      onSave={handleSaveNote} />}
       {showDiagnosis && <AddDiagnosisModal onClose={() => setShowDiagnosis(false)} onSave={handleSaveDiagnosis} />}
       {viewDiagnosis && <AddDiagnosisModal onClose={() => setViewDiagnosis(null)} viewData={viewDiagnosis} />}

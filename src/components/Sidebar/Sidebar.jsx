@@ -36,6 +36,10 @@ const NAV_ITEMS = [
     label: 'Task Groups', path: '/task-groups', key: 'task-groups',
     icon: <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="7" height="7" rx="1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><rect x="14" y="3" width="7" height="7" rx="1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><rect x="3" y="14" width="7" height="7" rx="1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><rect x="14" y="14" width="7" height="7" rx="1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>,
   },
+  {
+    label: 'Vital Metrics', path: '/vital-metrics', key: 'vital-metrics',
+    icon: <svg viewBox="0 0 24 24" fill="none"><path d="M22 12H18L15 21L9 3L6 12H2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+  },
 ]
 
 // map pathname+search → active key
@@ -46,9 +50,10 @@ const PATH_TO_KEY = {
   '/task-master':                   'task-master',
   '/task-groups':                   'task-groups',
   '/alerts':                        'alerts',
+  '/vital-metrics':                 'vital-metrics',
 }
 
-export default function Sidebar() {
+export default function Sidebar({ onClose, collapsed }) {
   const navigate  = useNavigate()
   const location  = useLocation()
   const { logout } = useAuth()
@@ -64,11 +69,17 @@ export default function Sidebar() {
     navigate(item.path)
   }
   return (
-    <aside className="dashboard-sidebar">
+    <aside className={`dashboard-sidebar${collapsed ? ' sidebar--collapsed' : ''}`}>
       <div className="sidebar-header">
         <button className="sidebar-logo" onClick={() => navigate('/nurse-dashboard')}>
           <img src="/VeoHome.png" alt="VeoHome" className="sidebar-logo-icon" />
           <span className="sidebar-logo-text">VeoHome</span>
+        </button>
+        {/* Mobile close button */}
+        <button className="sidebar-close-btn" onClick={onClose}>
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
         </button>
       </div>
 
@@ -78,18 +89,19 @@ export default function Sidebar() {
             key={item.key}
             className={`nav-item${activeKey === item.key ? ' active' : ''}`}
             onClick={() => handleClick(item)}
+            title={item.label}
           >
             {item.icon}
-            <span>{item.label}</span>
+            <span className="nav-label">{item.label}</span>
             {item.badge && <span className="nav-badge">{item.badge}</span>}
           </button>
         ))}
       </nav>
 
       <div className="sidebar-footer">
-        <button className="nav-item logout" onClick={() => { logout(); navigate('/login') }}>
+        <button className="nav-item logout" onClick={() => { logout(); navigate('/login') }} title="Logout">
           <svg viewBox="0 0 24 24" fill="none"><path d="M9 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M16 17L21 12L16 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M21 12H9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-          <span>Logout</span>
+          <span className="nav-label">Logout</span>
         </button>
       </div>
     </aside>

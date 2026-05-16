@@ -86,12 +86,31 @@ export const fetchVitals = (patientId) => apiGet(`/patients/${patientId}/vitals`
 
 export const createVital = (patientId, data) =>
   apiPost(`/patients/${patientId}/vitals`, {
-    systolic:  data.bpSystolic,
-    diastolic: data.bpDiastolic,
-    hr:        data.heartRate,
-    temp:      data.temperature,
-    spo2:      data.spo2,
-    notes:     data.notes || null,
+    // Clinical
+    systolic:    data.systolic    ?? null,
+    diastolic:   data.diastolic   ?? null,
+    bpHeartRate: data.bpHeartRate ?? null,
+    spo2:        data.spo2        ?? null,
+    spo2HeartRate: data.spo2HeartRate ?? null,
+    temperature: data.temperature ?? null,
+    // Body Composition
+    height:                   data.height                   ?? null,
+    weight:                   data.weight                   ?? null,
+    bmi:                      data.bmi                      ?? null,
+    bodyFatPercentage:        data.bodyFatPercentage        ?? null,
+    bodyFatMass:              data.bodyFatMass              ?? null,
+    skeletalMusclePercentage: data.skeletalMusclePercentage ?? null,
+    bodyWaterPercentage:      data.bodyWaterPercentage      ?? null,
+    totalMoisture:            data.totalMoisture            ?? null,
+    extracellularWaterPct:    data.extracellularWaterPct    ?? null,
+    intracellularWaterPct:    data.intracellularWaterPct    ?? null,
+    basalMetabolism:          data.basalMetabolism          ?? null,
+    visceralFatLevel:         data.visceralFatLevel         ?? null,
+    protein:                  data.protein                  ?? null,
+    mineral:                  data.mineral                  ?? null,
+    bodyAge:                  data.bodyAge                  ?? null,
+    overall:                  data.overall                  ?? null,
+    notes: data.notes || null,
   })
 
 // Diagnoses
@@ -108,6 +127,10 @@ export const fetchMedicationMaster = () => apiGet('/medication-master')
 // Clinical Notes
 export const fetchNotes = (patientId) => apiGet(`/patients/${patientId}/clinical-notes`)
 export const createNote = (patientId, data) => apiPost(`/patients/${patientId}/clinical-notes`, data)
+
+// Tasks master
+export const fetchTasksMaster      = () => apiGet('/tasks')
+export const fetchTaskGroupsMaster = () => apiGet('/task-groups')
 
 // Tasks
 export const fetchTasksRange = (patientId, from, to) => apiGet(`/patients/${patientId}/tasks/range`, { from, to })
@@ -132,8 +155,12 @@ export const uploadPatientPhoto = (patientId, file) => {
   })
 }
 
-// Alerts
-export const fetchUnresolvedAlerts = (patientId) => apiGet(`/patients/${patientId}/alerts/unresolved`)
+// Vital Metrics Master
+export const fetchVitalMetrics = () => apiGet('/vital-metrics')
+export const fetchVitalMetricsDisplay = () => apiGet('/vital-metrics/display')
+export const updateVitalMetric = (id, data) => apiPut(`/vital-metrics/${id}`, data)
+export const bulkUpdateVitalMetrics = (data) => apiPut('/vital-metrics/bulk', data)
 export const fetchPagedAlerts = (page = 0, size = 10) => apiGet('/alerts/paged', { page, size })
+export const fetchUnresolvedAlerts = (patientId) => apiGet(`/patients/${patientId}/alerts/unresolved`)
 export const fetchSurgeries = (patientId) => apiGet(`/patients/${patientId}/medical-history`)
 export const createSurgery = (patientId, data) => apiPost(`/patients/${patientId}/medical-history`, data)

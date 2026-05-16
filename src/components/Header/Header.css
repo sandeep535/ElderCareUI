@@ -5,7 +5,19 @@
   display: flex; justify-content: space-between; align-items: center;
   position: sticky; top: 0; z-index: 50;
 }
-.header-left { display: flex; align-items: center; gap: var(--space-md); }
+.header-menu-btn {
+  width: 40px; height: 40px;
+  border-radius: var(--radius-md);
+  border: none;
+  background-color: var(--color-off-white);
+  color: var(--color-gray);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all var(--transition-fast);
+  flex-shrink: 0;
+}
+.header-menu-btn:hover { background-color: var(--color-primary-alpha); color: var(--color-primary); }
+.header-menu-btn svg { width: 20px; height: 20px; }
 .page-title { font-family: var(--font-heading); font-size: 1.5rem; font-weight: 700; color: var(--color-navy); margin: 0; line-height: 1.2; }
 .page-subtitle { font-size: 0.875rem; color: var(--color-gray); margin: 0; line-height: 1.2; }
 .header-right { display: flex; align-items: center; gap: var(--space-md); }

@@ -2,7 +2,7 @@ import { useForm } from 'react-hook-form'
 import { useState, useEffect, useRef } from 'react'
 import { yupResolver } from '@hookform/resolvers/yup'
 import * as yup from 'yup'
-import { fetchMasterData } from '../../api/endpoints'
+import { fetchTasksMaster, fetchTaskGroupsMaster } from '../../api/endpoints'
 import '../UI/UI.css'
 import '../UI/Form.css'
 import './AddTaskModal.css'
@@ -37,8 +37,8 @@ export default function AddTaskModal({ onClose, onSave }) {
     const load = async () => {
       try {
         const [taskRes, groupRes] = await Promise.all([
-          fetchMasterData('tasks'),
-          fetchMasterData('task-groups'),
+          fetchTasksMaster(),
+          fetchTaskGroupsMaster(),
         ])
         setTasks(Array.isArray(taskRes) ? taskRes : taskRes?.data || [])
         setGroups(Array.isArray(groupRes) ? groupRes : groupRes?.data || [])
